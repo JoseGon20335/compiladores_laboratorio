@@ -1,0 +1,23 @@
+class Main inherits IO {
+    boolValue : Bool;
+    intValue : Int;
+    result : Int;
+    gwyn : String;
+    izalith : Bool;
+    nito : Int;
+
+
+    main() : Object {
+    {
+        result <- (intValue + boolValue); 
+        intValue <- result + 5;
+        intValue <- 5;
+        gwyn <- "Gwyn, Lord of Cinder";
+        izalith <- true;
+        nito <- intValue + 3;
+
+
+        self;
+    }
+    };
+};

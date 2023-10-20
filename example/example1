@@ -1,0 +1,29 @@
+class Person {
+   age : Int <- 0;
+   value() : Int { age };
+   
+   initialize(temp1: String): SELF_TYPE {
+      {
+         age <- Int;
+         self;
+      }
+   };
+   
+   introduce(): Object { -- edadPrint
+      out_string("I am " + string_of_int(age) + " years old.\n")
+   };
+};
+
+class Main inherits IO {
+
+   main() : Object {
+      {
+
+         people <- (new Person);
+         people.initialize(6);
+         people.introduce();
+
+      }
+   };
+
+};

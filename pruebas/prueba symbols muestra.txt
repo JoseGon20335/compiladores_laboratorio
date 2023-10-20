@@ -1,0 +1,50 @@
+Class A:
+
+Attributes: 
+var : Int
+
+Methods:
+value() : Int
+set_var(num : Int) : A
+method1(num : Int) : A
+method2(num1 : Int, num2 : Int) : A
+method3(num : Int) : A
+method4(num1 : Int, num2 : Int) : A
+method5(num : Int) : A
+
+Class B:
+
+Inherits from: A
+Methods:
+method5(num : Int) : A
+
+Class C:
+
+Inherits from: B
+Methods:
+method6(num : Int) : A
+method5(num : Int) : A
+
+Class D:
+
+Inherits from: B
+Methods:
+method7(num : Int) : Bool
+
+Class E:
+
+Inherits from: D
+Methods:
+method6(num : Int) : A
+
+Class Main:
+
+Inherits from: IO
+Attributes: 
+char : String, 
+avar : A, 
+a_var : A, 
+flag : Bool
+Methods:
+is_even(num : Int) : Bool
+main() : Main

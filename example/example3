@@ -1,0 +1,79 @@
+class Number {
+   var : Int;
+
+   set_value(value: Int) : Number {
+      {
+         var <- value;
+         self;
+      }
+   };
+
+   value() : Int {
+      var
+   };
+};
+
+class SquaredNumber inherits Number {
+   calculateSquare(num: Int) : SquaredNumber {
+      {
+         var <- num * num;
+         self;
+      }
+   };
+};
+
+class DoubledNumber inherits Number {
+   calculateDouble(num: Int) : DoubledNumber {
+      {
+         var <- num * 2;
+         self;
+      }
+   };
+};
+
+class SummedNumber inherits Number {
+   calculateSum(num1: Int, num2: Int) : SummedNumber {
+      {
+         var <- num1 + num2;
+         self;
+      }
+   };
+};
+
+class Main inherits IO {
+   main() : Object {
+      {
+         num1 <- (new Number);
+         num1.set_value(2);
+         out_int(num1.value());
+
+         num2 <- (new Number);
+         num2.set_value(3);
+         num1 <- (new SquaredNumber).calculateSquare(num1.value());
+         out_int(num1.value());
+         out_string("\n");
+
+         num3 <- (new DoubledNumber);
+         num3.set_value(4);
+         num1 <- num3.calculateDouble(num1.value());
+         out_int(num1.value());
+         out_string("\n");
+
+         num2 <- (new Number);
+         num2.set_value(5);
+         num1 <- (new SummedNumber).calculateSum(num1.value(), num2.value());
+         out_int(num1.value());
+         out_string("\n");
+
+         num1.set_value(5);
+         num1 <- (new DoubledNumber).calculateDouble(num1.value());
+         out_int(num1.value());
+         out_string("\n");
+
+         num1.set_value(6);
+         num1 <- (new DoubledNumber).calculateDouble(num1.value());
+         out_int(num1.value());
+         out_string("\n");
+      }
+   };
+};

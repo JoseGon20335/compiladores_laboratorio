@@ -1,0 +1,32 @@
+-- A YAPL program that does a = a + b * c
+
+class Number {
+    var : Int;
+ 
+    set_value(value: Int) : Number {
+       {
+          var <- value;
+          self;
+       }
+    };
+ 
+    value() : Int {
+       var
+    };
+};
+
+class Example {
+    a : Number;
+    b : Number;
+    c : Number;
+ 
+    main() : Int {
+       {
+          a <- Number.set_value(1);
+          b <- Number.set_value(2);
+          c <- Number.set_value(3);
+          a.set_value(a.value() + b.value() * c.value());
+          a.value();
+       }
+    };
+};
