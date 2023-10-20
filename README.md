@@ -1,4 +1,4 @@
-# CompiladoresLabs
+# Laboratorios de coompiladores Jose Miguel Gonzalez20335
 
 // Start antlr4
 // antlr4 antlr_build/grammarYapl.g4
