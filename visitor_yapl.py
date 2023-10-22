@@ -9,6 +9,11 @@ class visitor_yapl(grammarYaplVisitor):
     def __init__(self):
         self.symbol_table = symbol_table()
         self.scope = "GLOBAL"
+        self.defaultMethods = {
+            "IO": {"out_string": [["String"], "IO"], "out_int": [["Int"], "IO"], "in_string": [[], "String"], "in_int": [[], "Int"]},
+            "Object": {"abort": [[], "Object"], "type_name": [[], "String"], "copy": [[], "SELF_TYPE"]},
+            "String": {"length": [[], "Int"], "concat": [["String"], "String"], "substr": [["Int", "Int"], "String"]}
+        }
 
 
     def diagnosis(self, ctx:grammarYaplParser.ProgramContext):
@@ -16,8 +21,14 @@ class visitor_yapl(grammarYaplVisitor):
         print(dir(ctx))
 
     def visitProgram(self, ctx:grammarYaplParser.ProgramContext):
+        # define default methods
+        for value in self.defaultMethods:
+            for method in self.defaultMethods[value]:
+                newSymbol = symbol(method, self.defaultMethods[value][method][1], ctx.start.line, value)
+                self.symbol_table.add(method, newSymbol, None, self.defaultMethods[value][method][0], None, None)
+
         # Add program to symbol table
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def get_symbol_table(self):
         temp = []
@@ -48,11 +59,6 @@ class visitor_yapl(grammarYaplVisitor):
             return 8
 
     def visitClass_def(self, ctx:grammarYaplParser.Class_defContext):
-        ### AQUÍ DEFINIMOS UN CONTEXTO
-        # self.scope = ctx.TYPE_ID(0)
-        # newSymbol = symbol(ctx.TYPE_ID(0), ctx.CLASS().getText(), ctx.start.line, ctx.TYPE_ID(0))
-        # self.symbol_table.add(ctx.TYPE_ID(0), newSymbol, None)
-        # return self.visitChildren(ctx)
         self.scope = ctx.TYPE_ID(0).getText()
         #print("Scope: " + self.scope)
         if ctx.INHERITS() and ctx.TYPE_ID(1):
@@ -66,7 +72,7 @@ class visitor_yapl(grammarYaplVisitor):
             newSymbol = symbol(ctx.TYPE_ID(0).getText(), ctx.CLASS().getText(), ctx.start.line, self.scope)
             #self.symbol_table.addScope(self.scope)
             self.symbol_table.add(ctx.TYPE_ID(0).getText(), newSymbol, None, None, None, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitFeature(self, ctx:grammarYaplParser.FeatureContext):
         ### AQUÍ DEFINIMOS UN CONTEXTO
@@ -83,12 +89,7 @@ class visitor_yapl(grammarYaplVisitor):
                 for formal_ctx in ctx.formal():
                     param_name = formal_ctx.OBJECT_ID().getText()
                     param_type = formal_ctx.TYPE_ID().getText()
-                    parameters.append(param_type)                     
-                    #print("  scope: " + self.scope)
-                    #print("  Temporal scope: " + temporalScope)
-                    #print("  Param name: " + param_name)
-                    #print("-"*50)
-                    #print("  Temporal scope: " + temporalScope)
+                    parameters.append(param_type)
                     internalParam = symbol(param_name, param_type, ctx.start.line, temporalScope)
                     byteInternal = self.getByte(param_type)
                     #self.symbol_table.addChildScope(self.scope, temporalScope)
@@ -112,179 +113,116 @@ class visitor_yapl(grammarYaplVisitor):
                     parameters.append(param_type)
             self.symbol_table.add(name, newSymbol, None, parameters, 8, None)
             self.scope = name
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
 
 
     def visitFormal(self, ctx:grammarYaplParser.FormalContext):
-        newSymbol = symbol(ctx.OBJECT_ID().getText(), "FORMAL", ctx.start.line, self.scope)
-        # self.symbol_table.add(ctx.OBJECT_ID().getText(), newSymbol, None)
-        return self.visitChildren(ctx)
+        name = ctx.OBJECT_ID().getText()
+        data_type = ctx.TYPE_ID().getText()
+        newSymbol = symbol(name, data_type, ctx.start.line, self.scope)
+        self.symbol_table.add(name, newSymbol, None, None, self.getByte(data_type), None)
+        self.visitChildren(ctx)
     
     def visitAddSub(self, ctx:grammarYaplParser.AddSubContext):
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitMinus(self, ctx:grammarYaplParser.MinusContext):
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitNew(self, ctx:grammarYaplParser.NewContext):
         newSymbol = symbol("NEW", "NEW", ctx.start.line, self.scope)
         # self.symbol_table.add("NEW", newSymbol, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitDispatch(self, ctx:grammarYaplParser.DispatchContext):
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitString(self, ctx:grammarYaplParser.StringContext):
         newSymbol = symbol(ctx.STRING().getText(), "STRING", ctx.start.line, self.scope)
         # self.symbol_table.add(ctx.STRING().getText(), newSymbol, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitBool(self, ctx:grammarYaplParser.BoolContext):
         # newSymbol = symbol(ctx.TYPE_ID(0), ctx.expr(), ctx.start.line, self.scope)
         newSymbol = symbol(ctx.TYPE_ID(0), "BOOL", ctx.start.line, self.scope)
         # self.symbol_table.add(ctx.TYPE_ID(0), newSymbol, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
         
     def visitMulDiv(self, ctx:grammarYaplParser.MulDivContext):
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
 
     def visitIsvoid(self, ctx:grammarYaplParser.IsvoidContext):
         # newSymbol = symbol(ctx.TYPE_ID(0), "IS VOID", ctx.start.line, ctx.TYPE_ID(0))
         # self.symbol_table.add(ctx.TYPE_ID(0), newSymbol, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitType_id(self, ctx:grammarYaplParser.Type_idContext):        
         newSymbol = symbol(ctx.TYPE_ID().getText(), "TYPE", ctx.start.line, self.scope)
         # self.symbol_table.add(ctx.TYPE_ID().getText(), newSymbol, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitInteger(self, ctx:grammarYaplParser.IntegerContext):
         newSymbol = symbol(ctx.INTEGER().getText(), "INTEGER", ctx.start.line, self.scope)
         # self.symbol_table.add(ctx.INTEGER().getText(), newSymbol, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitStatic_dispatch(self, ctx:grammarYaplParser.Static_dispatchContext):
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitWhile(self, ctx:grammarYaplParser.WhileContext):
         # #self.symbol_table.add(ctx.WHILE().getText(), None, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitEq(self, ctx:grammarYaplParser.EqContext):
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitParenthesis(self, ctx:grammarYaplParser.ParenthesisContext):
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitObject_id(self, ctx:grammarYaplParser.Object_idContext):
         # newSymbol = symbol(ctx.TYPE_ID, str(ctx.expr()), ctx.start.line, ctx.TYPE_ID(0))
         # # self.symbol_table.add(ctx.TYPE_ID(0), newSymbol, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitNeg(self, ctx:grammarYaplParser.NegContext):
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitNot(self, ctx:grammarYaplParser.NotContext):
         print(dir(ctx))
         # This line assumes that ctx.NOT() gives you the intended information.
         newSymbol = symbol(ctx.NOT(), "NOT", ctx.start.line, self.scope) 
         # self.symbol_table.add(ctx.NOT(), newSymbol, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitSelf(self, ctx:grammarYaplParser.SelfContext):
         # newSymbol = symbol(ctx.self().getText(), str(ctx.expr()), ctx.start.line, ctx.self().getText())
         # # self.symbol_table.add(ctx.self().getText(), newSymbol, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitBlock(self, ctx:grammarYaplParser.BlockContext):
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
-    def safe_get_text(node, i):
-        if node is not None:
-            try:
-                return node.getText()
-            except Exception as e:
-                print(f"Exception when trying to getText() from node at index {i}: {str(e)}")
-                return None
-        else:
-            print(f"No node at index {i}")
-            return None
-        
     def visitLet(self, ctx:grammarYaplParser.LetContext):
-        # Handle the symbols defined in the let expression
-        let_scope = f"LET_{len(ctx.OBJECT_ID())}_{self.scope}"
-
-        # Log the encountered LET scope for debugging/verification purposes
-        print("LET")
-        print(let_scope)
-        
-        i = 0
-        while i < len(ctx.children):
-            current_child = ctx.children[i]
-
-            # Check if it's an OBJECT_ID token
-            if current_child.getSymbol().type == grammarYaplParser.OBJECT_ID:
-                # Get name and datatype
-                name = current_child.getText()
-                data_type = ctx.children[i + 2].getText()  # Assume TYPE_ID is always two tokens away from OBJECT_ID
-                
-                # Log error info for debugging/verification purposes
-                print("error")
-                print(i)
-                type_id_node = ctx.TYPE_ID(i)
-                if type_id_node:
-                    print(type_id_node.getText())
-                else:
-                    print(f"No TYPE_ID found at index {i}")
-                
-                # Create and add a new symbol
-                newSymbol = symbol(name, "Int", ctx.start.line, self.scope)  # Adjust symbol creation as needed
+        newSymbol = symbol(ctx.LET().getText(), "LET", ctx.start.line, self.scope)
+        self.symbol_table.add(ctx.LET().getText(), newSymbol, None, None, self.getByte("Let"), None)
+        for i in range(len(ctx.OBJECT_ID())):
+            if(ctx.TYPE_ID(i) != None):
+                print(ctx)
+                name = ctx.OBJECT_ID(i).getText()
+                print(name)
+                data_type = ctx.TYPE_ID(i).getText()
+                print(data_type)
+                newSymbol = symbol(name, data_type, ctx.start.line, self.scope)
                 self.symbol_table.add(name, newSymbol, None, None, self.getByte(data_type), None)
-                
-                # Check if there's an ASSIGN token four tokens away (i.e., let x: Int <- ...)
-                # Check if there's an ASSIGN token four tokens away (i.e., let x: Int <- ...)
-                if (i + 4) < len(ctx.children) and ctx.children[i + 4].getSymbol().type == grammarYaplParser.ASSIGN:
-                    # Handle assignment... (if needed)
-                    pass
-                                
-                # Check if there's a COMMA token which indicates more variables are defined in the let expression
-                if (i + 5) < len(ctx.children) and ctx.children[i + 5].getSymbol().type == grammarYaplParser.COMMA:
-                    i += 6  # Move to the next variable definition
-                else:
-                    i += 5  # Move to the IN keyword
-            else:
-                i += 1
-
-        # Visit children of the let expression, which should handle the 'in' part
-        return self.visitChildren(ctx)
-        
-    # def visitLet(self, ctx:grammarYaplParser.LetContext):
-    #     # Handle the symbols defined in the let expression
-    #     let_scope = f"LET_{len(ctx.OBJECT_ID())}_{self.scope}"
-
-    #     print("LET")
-    #     print(let_scope)
-    #     for i in range(len(ctx.OBJECT_ID())):
-    #         name = ctx.OBJECT_ID(i).getText()
-    #         data_type = ctx.TYPE_ID(i).getText()
-    #         newSymbol = symbol(name, "Int", ctx.start.line, self.scope)
-    #         self.symbol_table.add(name, newSymbol, None, None, self.getByte(data_type), None)
-    #     return self.visitChildren(ctx)
-
-
-        # newSymbol = symbol(ctx.TYPE_ID(0), "LET", ctx.start.line, self.scope)
-        # # self.symbol_table.add(ctx.TYPE_ID(0), newSymbol, None)
-        # return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitIf(self, ctx:grammarYaplParser.IfContext):
         newSymbol = symbol(ctx.IF().getText(), "IF", ctx.start.line, self.scope)
         # self.symbol_table.add(ctx.IF().getText(), newSymbol, None)
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
     
     def visitAssign(self, ctx:grammarYaplParser.AssignContext):
-        return self.visitChildren(ctx)
-
-
+        self.visitChildren(ctx)
 
 class bottomUpValidator(grammarYaplVisitor):
 
