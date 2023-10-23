@@ -5,7 +5,7 @@ from prettytable import PrettyTable
 from antlr_build.grammarYaplLexer import grammarYaplLexer
 from antlr_build.grammarYaplParser import grammarYaplParser
 from antlr_build.grammarYaplVisitor import grammarYaplVisitor
-from visitor_yapl import visitor_yapl, bottomUpValidator
+from visitor_yapl import visitor_yapl
 from CustomErrorListener import CustomErrorListener
 from codigo_intermedio import codigo_intermedio
 

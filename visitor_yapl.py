@@ -21,16 +21,19 @@ class visitor_yapl(grammarYaplVisitor):
         print(dir(ctx))
 
     def visitProgram(self, ctx:grammarYaplParser.ProgramContext):
-        # define default methods
+        # define default 
+        print("_____Program_____")
         for value in self.defaultMethods:
             for method in self.defaultMethods[value]:
                 newSymbol = symbol(method, self.defaultMethods[value][method][1], ctx.start.line, value)
                 self.symbol_table.add(method, newSymbol, None, self.defaultMethods[value][method][0], None, None)
+                print("Class " + method)
 
         reservados = ["Int", "String", "Bool", "IO", "Object"]
         for value in reservados:
             newSymbol = symbol(value, "class", ctx.start.line, "GLOBAL")
             self.symbol_table.add(value, newSymbol, None, None, None, None)
+            print("Class " + value)
         # Add program to symbol table
         self.visitChildren(ctx)
     
@@ -63,6 +66,7 @@ class visitor_yapl(grammarYaplVisitor):
             return 8
 
     def visitClass_def(self, ctx:grammarYaplParser.Class_defContext):
+        print("_____Class_____")
         self.scope = str(ctx.TYPE_ID(0).getText())
 
         # Check if class already exists
@@ -97,14 +101,17 @@ class visitor_yapl(grammarYaplVisitor):
                     print("Class " + self.scope + " inherits method " + method.varName)
                     newSymbol = symbol(method.varName, method.dataType, method.line, self.scope)
                     self.symbol_table.add(method.varName, newSymbol, None, method.paramTypes, method.byte)
+                    print("Class " + method.varName)
 
         newSymbol = symbol(self.scope, ctx.CLASS().getText(), ctx.start.line, self.scope)
         self.symbol_table.add(self.scope, newSymbol, inheritsFrom, None, None, None)
+        print("Class " + self.scope)
 
         # Visit children after validating class
         self.visitChildren(ctx)
     
     def visitMethod(self, ctx: grammarYaplParser.FeatureContext):
+        print("_____Method_____")
         # If both OBJECT_ID and TYPE_ID are present, it's an attribute or a method. 
         # if ctx.OBJECT_ID() and ctx.TYPE_ID():
         # Assign common values 
@@ -126,6 +133,7 @@ class visitor_yapl(grammarYaplVisitor):
         newSymbol = symbol(currentSymbol, data_type, line, self.scope)
         # Adding number of parameters and their types as well
         self.symbol_table.add(currentSymbol, newSymbol, None, params, self.getByte(data_type), types)
+        print("Method: " + currentSymbol)
         self.scope = currentSymbol
         print("Method: " + currentSymbol)
         # else:
@@ -141,6 +149,7 @@ class visitor_yapl(grammarYaplVisitor):
         self.scope = oldScope
 
     def visitAttribute(self, ctx:grammarYaplParser.AttributeContext):
+        print("_____Attribute_____")
         currentSymbol = ctx.OBJECT_ID().symbol.text
         type = ctx.TYPE_ID(0).getText()
         line = ctx.start.line
@@ -153,13 +162,16 @@ class visitor_yapl(grammarYaplVisitor):
         self.visitChildren(ctx)
 
     def visitFormal(self, ctx:grammarYaplParser.FormalContext):
+        print("_____Formal_____")
         name = ctx.OBJECT_ID().getText()
         data_type = ctx.TYPE_ID().getText()
         newSymbol = symbol(name, data_type, ctx.start.line, self.scope)
         self.symbol_table.add(name, newSymbol, None, None, self.getByte(data_type), None)
+        print("Formal: " + name)
         self.visitChildren(ctx)
     
     def visitAddSub(self, ctx:grammarYaplParser.AddSubContext):
+        print("_____AddSub_____")
         # Visit children first
         self.visitChildren(ctx)
 
@@ -188,12 +200,14 @@ class visitor_yapl(grammarYaplVisitor):
                 print("Add: Same type")
                 newSymbol = symbol(symbolGet, "Int", ctx.start.line, self.scope)
                 self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte("Int"), None)
+                print("Add ", symbolGet)
             else:
                 print("Substract: Same type")
                 print(symbolGet)
                 print(ctx.start.line)
                 newSymbol = symbol(symbolGet, "Int", ctx.start.line, self.scope)
                 self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte("Int"), None)
+                print("Substract ", symbolGet)
         else:
             if hasattr(ctx, "ADD"):  # Adjust this check based on your actual implementation
                 # Logic for validateTypes integrated
@@ -209,9 +223,11 @@ class visitor_yapl(grammarYaplVisitor):
                 self.symbol_table.addError("Substract operation with different or invalid types")
         
     def visitMinus(self, ctx:grammarYaplParser.MinusContext):
+        print("_____Minus_____")
         self.visitChildren(ctx)
     
     def visitNew(self, ctx:grammarYaplParser.NewContext):
+        print("_____New_____")
         symbolGet = ctx.getText()
         symbolType = ctx.TYPE_ID().symbol.text
 
@@ -230,6 +246,7 @@ class visitor_yapl(grammarYaplVisitor):
             print("New: Symbol found " + symbolType)
             newSymbol = symbol(symbolGet, symbolType, ctx.start.line, self.scope)
             self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte(symbolType), None)
+            print("New ", symbolGet)
         else:
             print("New: Symbol not found " + symbolType)
             self.symbol_table.addError("New: Symbol not found " + symbolType + " in line " + str(ctx.start.line))
@@ -238,6 +255,7 @@ class visitor_yapl(grammarYaplVisitor):
         self.visitChildren(ctx)
     
     def visitDispatch(self, ctx:grammarYaplParser.DispatchContext):
+        print("_____Dispatch_____")
         # Visit children before validating
         self.visitChildren(ctx)
 
@@ -285,6 +303,7 @@ class visitor_yapl(grammarYaplVisitor):
                     print("Dispatch: Symbol found " + symbol + " with valid input types")
                     newSymbol = symbol(completeExpr, symbolType, ctx.start.line, self.scope)
                     self.symbol_table.add(completeExpr, newSymbol, None, None, self.getByte(symbolType), None)
+                    print("Dispatch ", completeExpr)
                 else:
                     print("Dispatch: Symbol not found " + symbol)
         else:
@@ -292,22 +311,27 @@ class visitor_yapl(grammarYaplVisitor):
 
     
     def visitString(self, ctx:grammarYaplParser.StringContext):
+        print("_____String_____")
         name = ctx.STRING().getText()
         type = "String"
         print("String ", name)
         newSymbol = symbol(name, type, ctx.start.line, self.scope)
         self.symbol_table.add(ctx.STRING().getText(), newSymbol, None, None, self.getByte("String"), None)
+        print("String ", name)
         self.visitChildren(ctx)
     
     def visitBool(self, ctx:grammarYaplParser.BoolContext):
+        print("_____Bool_____")
         name = ctx.BOOL().getText()
         type = "Bool"
         print("Bool ", name)
         newSymbol = symbol(name, type, ctx.start.line, self.scope)
         self.symbol_table.add(ctx.TYPE_ID(0), newSymbol, None, None, self.getByte("Bool"), None)
+        print("Bool ", name)
         self.visitChildren(ctx)
         
     def visitMulDiv(self, ctx: grammarYaplParser.MulDivContext):
+        print("_____MulDiv_____")
         # Visit children first
         self.visitChildren(ctx)
 
@@ -344,10 +368,12 @@ class visitor_yapl(grammarYaplVisitor):
             print(f"{operation}: Same type")
             newSymbol = symbol(symbolGet, "Int", ctx.start.line, self.scope)
             self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte("Int"), None)
+            print(f"{operation} ", symbolGet)
         else:
             self.symbol_table.addError(f"{operation} operation with different or invalid types")
 
     def visitIsvoid(self, ctx:grammarYaplParser.IsvoidContext):
+        print("_____Isvoid_____")
         self.visitChildren(ctx)
 
         symbolGet = ctx.getText()
@@ -368,16 +394,20 @@ class visitor_yapl(grammarYaplVisitor):
             symbolType = self.symbol_table.getSymbol(expr, self.scope).dataType
             newSymbol = symbol(symbolGet, symbolType, ctx.start.line, self.scope)
             self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte("Bool"), None)
+            print("Isvoid ", symbolGet)
         else:
             print("Isvoid: Symbol not found " + expr)
 
     def visitInteger(self, ctx:grammarYaplParser.IntegerContext):
+        print("_____Integer_____")
         name = ctx.INTEGER().getText()
         newSymbol = symbol(ctx.INTEGER().getText(), "Int", ctx.start.line, self.scope)
         self.symbol_table.add(name, newSymbol, None, None, self.getByte("Int"), None)
+        print("Integer ", name)
         self.visitChildren(ctx)
     
     def visitStatic_dispatch(self, ctx:grammarYaplParser.Static_dispatchContext):
+        print("_____Static_dispatch_____")
         # Visit children first
         self.visitChildren(ctx)
 
@@ -412,10 +442,12 @@ class visitor_yapl(grammarYaplVisitor):
                 symbolType = callingMethod.dataType
                 newSymbol = symbol(symbolGet, symbolType, ctx.start.line, self.scope)
                 self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte(symbolType), None)
+                print("Static Dispatch ", symbolGet)
             else:
                 print("Static Dispatch: Symbol not found " + symbolGet)
 
     def visitWhile(self, ctx:grammarYaplParser.WhileContext):
+        print("_____While_____")
         # Visit children first
         self.visitChildren(ctx)
 
@@ -440,10 +472,12 @@ class visitor_yapl(grammarYaplVisitor):
             symbolType = self.symbol_table.getSymbol(expr, self.scope).dataType
             newSymbol = symbol(symbolGet, symbolType, ctx.start.line, self.scope)
             self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte(symbolType), None)
+            print("While ", symbolGet)
         else:
             print("While: Symbol not found " + expr)
 
     def visitComparison(self, ctx:grammarYaplParser.ComparisonContext):
+        print("_____Comparison_____")
         # Visit children first
         self.visitChildren(ctx)
 
@@ -471,10 +505,12 @@ class visitor_yapl(grammarYaplVisitor):
             print("Compare: Same type")
             newSymbol = symbol(symbolGet, "Bool", ctx.start.line, self.scope)
             self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte("Bool"), None)
+            print("Compare ", symbolGet)
         else:
             self.symbol_table.addError("Compare operation with different or invalid types")
     
     def visitParenthesis(self, ctx:grammarYaplParser.ParenthesisContext):
+        print("_____Parenthesis_____")
         self.visitChildren(ctx)
         name = ctx.expr().getText()
         type = self.symbol_table.getSymbol(name, self.scope)
@@ -484,14 +520,17 @@ class visitor_yapl(grammarYaplVisitor):
             print("Parenthesis: Symbol found " + name)
             newSymbol = symbol(name, type, ctx.start.line, self.scope)
             self.symbol_table.add(name, newSymbol, None, None, self.getByte(type), None)
+            print("Parenthesis ", name)
         else:
             print("Parenthesis: Symbol not found " + name)
 
     
     def visitObject_id(self, ctx:grammarYaplParser.Object_idContext):
+        print("_____Object_id_____")
         print("Object_id ", ctx.OBJECT_ID().getText())
     
     def visitNeg(self, ctx:grammarYaplParser.NegContext):
+        print("_____Neg_____")
         # Visit children before validating
         self.visitChildren(ctx)
 
@@ -519,10 +558,12 @@ class visitor_yapl(grammarYaplVisitor):
             symbolType = self.symbol_table.getSymbol(expr, self.scope).dataType
             newSymbol = symbol(symbolGet, symbolType, ctx.start.line, self.scope)
             self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte(symbolType), None)
+            print("Neg ", symbolGet)
         else:
             print("Neg: Symbol not found " + expr)
 
     def visitNot(self, ctx: grammarYaplParser.NotContext):
+        print("_____Not_____")
         # Visit children before validating
         self.visitChildren(ctx)
 
@@ -550,22 +591,27 @@ class visitor_yapl(grammarYaplVisitor):
             symbolType = found_symbol.dataType
             newSymbol = symbol(symbol_text, symbolType, ctx.start.line, self.scope)
             self.symbol_table.add(symbol_text, newSymbol, None, None, self.getByte(symbolType), None)
+            print("Not ", symbol_text)
         else:
             print("Not: Symbol not found " + expr)
 
     def visitSelf(self, ctx:grammarYaplParser.SelfContext):
+        print("_____Self_____")
         name = ctx.getText()
         type = "SELF_TYPE"
         print("Self ", name)
         newSymbol = symbol(name, type, ctx.start.line, self.scope)
         self.symbol_table.add(name, newSymbol, None, None, self.getByte(type), None)
+        print("Self ", name)
         self.visitChildren(ctx)
     
     def visitBlock(self, ctx:grammarYaplParser.BlockContext):
+        print("_____Block_____")
         self.visitChildren(ctx)
         print("Block ", ctx.getText())
     
     def visitLet(self, ctx:grammarYaplParser.LetContext):
+        print("_____Let_____")
         newSymbol = symbol(ctx.LET().getText(), "LET", ctx.start.line, self.scope)
         print("Let ", ctx.getText())
         self.symbol_table.add(ctx.LET().getText(), newSymbol, None, None, self.getByte("Let"), None)
@@ -573,11 +619,12 @@ class visitor_yapl(grammarYaplVisitor):
             name = ctx.OBJECT_ID(i).getText()
             data_type = ctx.TYPE_ID(i).getText()
             newSymbol = symbol(name, data_type, ctx.start.line, self.scope)
-            print("Let ", name, data_type)
             self.symbol_table.add(name, newSymbol, None, None, self.getByte(data_type), None)
+            print("Let ", name, "type", data_type)
         self.visitChildren(ctx)
     
     def visitIf(self, ctx: grammarYaplParser.IfContext):
+        print("_____If_____")
         # Visit children before validating
         self.visitChildren(ctx)
 
@@ -606,10 +653,12 @@ class visitor_yapl(grammarYaplVisitor):
             symbolType = found_symbol.dataType
             newSymbol = symbol(symbol_text, symbolType, ctx.start.line, self.scope)
             self.symbol_table.add(symbol_text, newSymbol, None, None, self.getByte(symbolType), None)
+            print("If ", symbol_text)
         else:
             print("If: Symbol not found " + expr)
 
     def visitAssign(self, ctx: grammarYaplParser.AssignContext):
+        print("_____Assign_____")
         # Visit children before validating
         self.visitChildren(ctx)
 
@@ -642,6 +691,7 @@ class visitor_yapl(grammarYaplVisitor):
                     self.symbol_table.addError(error_msg)
 
     def visitAnd(self, ctx:grammarYaplParser.AndContext):
+        print("_____And_____")
         # Visit children before validating
         self.visitChildren(ctx)
 
@@ -666,10 +716,12 @@ class visitor_yapl(grammarYaplVisitor):
             print("And: Same type")
             newSymbol = symbol(symbolGet, "Bool", ctx.start.line, self.scope)
             self.symbol_table.add(symbolGet, newSymbol, None, None, None, None)
+            print("And ", symbolGet)
         else:
             self.symbol_table.addError("And operation with different or invalid types")
         
     def visitOr(self, ctx:grammarYaplParser.OrContext):
+        print("_____Or_____")
         # Visit children before validating
         self.visitChildren(ctx)
 
@@ -694,261 +746,6 @@ class visitor_yapl(grammarYaplVisitor):
             print("Or: Same type")
             newSymbol = symbol(symbolGet, "Bool", ctx.start.line, self.scope)
             self.symbol_table.add(symbolGet, newSymbol, None, None, None, None)
+            print("Or ", symbolGet)
         else:
             self.symbol_table.addError("Or operation with different or invalid types")
-
-class bottomUpValidator(grammarYaplVisitor):
-
-
-    def __init__(self, symbol_table):
-        self.symbol_table = symbol_table
-        print(self.symbol_table.scopes)
-
-    def visitDeep(self, ctx):
-        if not hasattr(ctx, 'children'):
-            #print("   *|   ",ctx.getText(), type(ctx))
-            #print("     *   ",self.symbol_table.lookup(ctx.getText()))
-            #print("     *   ",ctx.getParent().getText())
-            #print("     *   ", type(ctx.getParent()))
-            #print("     *   ", ctx.getText())
-            #print("     *   ", dir(ctx))
-            if self.symbol_table.lookup(ctx.getText()) != False: 
-                self.goUp(ctx)
-
-
-            # handle terminal nodes
-
-            #return self.visit(ctx)
-        else:
-            #results = [self.visitDeep(child) for child in ctx.children]
-            #return all(results)
-            for child in ctx.children:
-                self.visitDeep(child)
-            
-            # handle non terminal nodes
-
-    def goUp(self, ctx):
-        print("     *   ",ctx.getText(), type(ctx))
-        self.visit(ctx.getParent())
-        if hasattr(ctx.getParent(), 'getParent'):
-            self.goUp(ctx.getParent())
-
-
-
-
-    def visitAddSub(self, ctx):
-        # Esto se asegura de que se comprueben los casteos y que los valores que se están operando sean válidos entre ellos
-        child_types = [self.visit(child) for child in ctx.children]
-        sumando1 = ctx.children[0]
-        sumando2 = ctx.children[2]
-
-        type_sumando1 = type(sumando1)
-        type_sumando2 = type(sumando2)
-
-        isTable1 = self.symbol_table.lookup(sumando1.getText())
-        isTable2 = self.symbol_table.lookup(sumando2.getText())
-
-        type_table1 = isTable1.type if isTable1 != False else None
-        type_table2 = isTable2.type if isTable2 != False else None
-
-        #print("    '   ", sumando1.getText(), type_sumando1, isTable1, type_table1)
-        #print("    '   ", sumando2.getText(), type_sumando2, isTable2, type_table2)
-#
-        ## existen 3 tipos de match: que type_table y type_table sean iguales, que type_sumando y type_table sean correspondientes entre ellos, o que type_sumando y type_sumando sean correspondientes entre ellos
-#
-        ## type_sumando1 y type_sumando2 son iguales
-        #print("    '   ", self.translateType(type_sumando1), self.translateType(type_sumando2))
-        #print("    '   ", type_table1, type_table2)
-
-        if type_sumando1 == type_sumando2 and self.translateType(type_sumando1) != "Bool" and self.translateType(type_sumando1) != "String":
-            #print(" Scott Pilgrim")
-            ctx.__class__ = type_sumando1
-
-        # type_sumando1 y type_table1 son iguales
-        elif self.translateType(type_sumando1) == type_table2 and self.translateType(type_sumando1) != "Bool" and self.translateType(type_sumando1) != "String":
-            #print(" Ramona Flowers")
-            ctx.__class__ = type_sumando1
-
-        elif self.translateType(type_sumando1) == "Int" and type_table2 == "Bool":
-            #print(" Envy Adams")
-            ctx.__class__ = type_sumando1
-        else:
-            print("ERROR: Cannot add unmatching types of values. Expected Int + Int or Int + Bool")
-            #exit(1)
-
-    def visitMinus(self, ctx):
-        child_types = [self.visit(child) for child in ctx.children]
-        minuendo = ctx.children[0]
-        sustraendo = ctx.children[2]
-
-        type_minuendo = type(minuendo)
-        type_sustraendo = type(sustraendo)
-
-        isTable1 = self.symbol_table.lookup(minuendo.getText())
-        isTable2 = self.symbol_table.lookup(sustraendo.getText())
-
-        type_table1 = isTable1.type if isTable1 != False else None
-        type_table2 = isTable2.type if isTable2 != False else None
-
-        if type_minuendo == type_sustraendo and self.translateType(type_minuendo) != "Bool" and self.translateType(type_minuendo) != "String":
-            ctx.__class__ = type_minuendo
-
-        elif self.translateType(type_minuendo) == type_table2 and self.translateType(type_minuendo) != "Bool" and self.translateType(type_minuendo) != "String":
-            ctx.__class__ = type_minuendo
-
-        elif self.translateType(type_minuendo) == "Int" and type_table2 == "Bool":
-            ctx.__class__ = type_minuendo
-
-        else:
-            print("ERROR: Cannot substract unmatching types of values. Expected Int - Int or Int - Bool")
-            #exit(1)
-
-
-
-    def visitMulDiv(self, ctx):
-        child_types = [self.visit(child) for child in ctx.children]
-
-        multiplicando = ctx.children[0]
-        multiplicador = ctx.children[2]
-
-        type_multiplicando = type(multiplicando)
-        type_multiplicador = type(multiplicador)
-
-        isTable1 = self.symbol_table.lookup(multiplicando.getText())
-        isTable2 = self.symbol_table.lookup(multiplicador.getText())
-
-        type_table1 = isTable1.type if isTable1 != False else None
-        type_table2 = isTable2.type if isTable2 != False else None
-
-        if type_multiplicando == type_multiplicador and self.translateType(type_multiplicando) != "Bool" and self.translateType(type_multiplicando) != "String":
-            ctx.__class__ = type_multiplicando
-        elif self.translateType(type_multiplicando) == type_table2 and self.translateType(type_multiplicando) != "Bool" and self.translateType(type_multiplicando) != "String":
-            ctx.__class__ = type_multiplicando
-        elif self.translateType(type_multiplicando) == "Int" and type_table2 == "Bool":
-            ctx.__class__ = type_multiplicando
-        else:
-            print("ERROR: Cannot multiply unmatching types of values. Expected Int * Int or Int * Bool")
-            #exit(1)
-
-    def visitEq(self, ctx):
-        child_types = [self.visit(child) for child in ctx.children]
-        print(ctx.__class__)
-        comparando1 = ctx.children[0]
-        print(ctx.children[1].getText())
-        comparando2 = ctx.children[2]
-
-        type_comparando1 = type(comparando1)
-        type_comparando2 = type(comparando2)
-
-        isTable1 = self.symbol_table.lookup(comparando1.getText())
-        isTable2 = self.symbol_table.lookup(comparando2.getText())
-
-        type_table1 = isTable1.type if isTable1 != False else None
-        type_table2 = isTable2.type if isTable2 != False else None
-
-        if type_comparando1 == type_comparando2 and self.translateType(type_comparando1) != "Bool" and self.translateType(type_comparando1) != "String":
-            ctx.__class__ = type_comparando1
-        elif self.translateType(type_comparando1) == type_table2 and self.translateType(type_comparando1) != "Bool" and self.translateType(type_comparando1) != "String":
-            ctx.__class__ = type_comparando1
-        elif self.translateType(type_comparando1) == "Int" and type_table2 == "Bool":
-            ctx.__class__ = type_comparando1
-        else:
-            print("ERROR: Cannot compare unmatching types of values. Expected Int == Int or Int == Bool")
-            #exit(1)
-        print(ctx.__class__)
-
-
-        
-    def translateType(self, type):
-        if type == grammarYaplParser.IntegerContext:
-            return "Int"
-        elif type == grammarYaplParser.StringContext:
-            return "String"
-        elif type == grammarYaplParser.BoolContext:
-            return "Bool"
-        
-    
-    def visitAssign(self, ctx):
-        #print('-' * 50)
-        #print("LLEGAMOS ASIGNACION!")
-        #print("         - ", ctx.__class__)
-        #print(ctx.getText())
-        child_types = [self.visit(child) for child in ctx.children]
-        #print(child_types)
-        asignando = ctx.children[0] # variable que recibe
-        asignado = ctx.children[2] # valor que se asigna
-        isTable1 = self.symbol_table.lookup(asignando.getText())
-        isTable2 = self.symbol_table.lookup(asignado.getText())
-
-        if isTable1 != False and isTable2 != False:
-            # mismo tipo de dato
-            if isTable1.type == isTable2.type:
-                # asignación de una variable a otra variable
-                #rint("Asignación de una variable a otra variable")
-                contexto = { 'Int': grammarYaplParser.IntegerContext, 'Bool': grammarYaplParser.BoolContext, 'String': grammarYaplParser.StringContext, 'SELF_TYPE': grammarYaplParser.SelfContext }
-                ctx.__class__ = contexto[isTable1.type]
-                #print("         // ", ctx.__class__)
-                #return contexto[isTable1.type]
-            else:
-                # reglas de casteo y asignacion
-                if isTable1.type == "Int" and isTable2.type == "Bool":
-                    #rint("Bool to Int, True = 1, False = 0")
-                    ctx.__class__ = grammarYaplParser.IntegerContext
-                    #print("         // ", ctx.__class__)
-                    #return grammarYaplParser.IntegerContext
-                elif isTable1.type == "Bool" and isTable2.type == "Int":
-                    ctx.__class__ = grammarYaplParser.BoolContext
-                    #print("         // ", ctx.__class__)
-                    #rint("Int to Bool, 0 = False, (>0) = True")
-                    #return grammarYaplParser.BoolContext
-                else:
-                    print("ERROR: Cannot assign different types of values")
-                    #return "ERROR"
-                    #exit(1)
-
-        else:
-            # asignación de un valor explicito a una variable
-
-            # int to int ERROR
-            print("-------------------------------------------------------------------------------------------------------------------------------")
-            print(asignado)
-            print(type(asignado))
-            print(isTable1)
-            print(isTable1.type)
-            
-            if isTable1.type == "Int" and type(asignado) == grammarYaplParser.IntegerContext:
-                #rint("int to int")
-                #return grammarYaplParser.IntegerContext
-                ctx.__class__ = grammarYaplParser.IntegerContext
-                #print("         // ", ctx.__class__)
-
-            # bool to bool
-            elif isTable1.type == "Bool" and (asignado.getText() == "true" or asignado.getText() == "false"):
-                #rint("bool to bool")
-                #return grammarYaplParser.BoolContext
-                ctx.__class__ = grammarYaplParser.BoolContext
-                #print("         // ", ctx.__class__)
-            # string to string
-            elif isTable1.type == "String" and type(asignado) == grammarYaplParser.StringContext:
-                #rint("string to string")
-                #return grammarYaplParser.StringContext
-                ctx.__class__ = grammarYaplParser.StringContext
-                #print("         // ", ctx.__class__)
-            # int to bool
-            elif isTable1.type == "Bool" and type(asignado) == grammarYaplParser.IntegerContext:
-                #rint("int to bool")
-                #return grammarYaplParser.BoolContext
-                ctx.__class__ = grammarYaplParser.BoolContext
-                #print("         // ", ctx.__class__)
-            # bool to int
-            elif isTable1.type == "Int" and (asignado.getText() == "true" or asignado.getText() == "false"):
-                #rint("bool to int")
-                #return grammarYaplParser.IntegerContext
-                ctx.__class__ = grammarYaplParser.IntegerContext
-                #print("         // ", ctx.__class__)
-            else:
-                print("ERROR: Cannot assign different types of values")
-                #return "ERROR"
-                #exit(1)
-        #print("         - ", ctx.__class__)
-        #print('-' * 50)
