@@ -27,15 +27,29 @@ public interface grammarYaplListener extends ParseTreeListener {
 	 */
 	void exitClass_def(grammarYaplParser.Class_defContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link grammarYaplParser#feature}.
+	 * Enter a parse tree produced by the {@code method}
+	 * labeled alternative in {@link grammarYaplParser#feature}.
 	 * @param ctx the parse tree
 	 */
-	void enterFeature(grammarYaplParser.FeatureContext ctx);
+	void enterMethod(grammarYaplParser.MethodContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link grammarYaplParser#feature}.
+	 * Exit a parse tree produced by the {@code method}
+	 * labeled alternative in {@link grammarYaplParser#feature}.
 	 * @param ctx the parse tree
 	 */
-	void exitFeature(grammarYaplParser.FeatureContext ctx);
+	void exitMethod(grammarYaplParser.MethodContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code attribute}
+	 * labeled alternative in {@link grammarYaplParser#feature}.
+	 * @param ctx the parse tree
+	 */
+	void enterAttribute(grammarYaplParser.AttributeContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code attribute}
+	 * labeled alternative in {@link grammarYaplParser#feature}.
+	 * @param ctx the parse tree
+	 */
+	void exitAttribute(grammarYaplParser.AttributeContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link grammarYaplParser#formal}.
 	 * @param ctx the parse tree
@@ -46,18 +60,6 @@ public interface grammarYaplListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitFormal(grammarYaplParser.FormalContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code new}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterNew(grammarYaplParser.NewContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code new}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitNew(grammarYaplParser.NewContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code minus}
 	 * labeled alternative in {@link grammarYaplParser#expr}.
@@ -70,18 +72,6 @@ public interface grammarYaplListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitMinus(grammarYaplParser.MinusContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code comparison}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterComparison(grammarYaplParser.ComparisonContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code comparison}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitComparison(grammarYaplParser.ComparisonContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code dispatch}
 	 * labeled alternative in {@link grammarYaplParser#expr}.
@@ -131,30 +121,6 @@ public interface grammarYaplListener extends ParseTreeListener {
 	 */
 	void exitIsvoid(grammarYaplParser.IsvoidContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code type_id}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterType_id(grammarYaplParser.Type_idContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code type_id}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitType_id(grammarYaplParser.Type_idContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code addSub}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterAddSub(grammarYaplParser.AddSubContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code addSub}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitAddSub(grammarYaplParser.AddSubContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code integer}
 	 * labeled alternative in {@link grammarYaplParser#expr}.
 	 * @param ctx the parse tree
@@ -167,18 +133,6 @@ public interface grammarYaplListener extends ParseTreeListener {
 	 */
 	void exitInteger(grammarYaplParser.IntegerContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code static_dispatch}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterStatic_dispatch(grammarYaplParser.Static_dispatchContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code static_dispatch}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitStatic_dispatch(grammarYaplParser.Static_dispatchContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code while}
 	 * labeled alternative in {@link grammarYaplParser#expr}.
 	 * @param ctx the parse tree
@@ -190,42 +144,6 @@ public interface grammarYaplListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitWhile(grammarYaplParser.WhileContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code eq}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterEq(grammarYaplParser.EqContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code eq}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitEq(grammarYaplParser.EqContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code parenthesis}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterParenthesis(grammarYaplParser.ParenthesisContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code parenthesis}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitParenthesis(grammarYaplParser.ParenthesisContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code object_id}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterObject_id(grammarYaplParser.Object_idContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code object_id}
-	 * labeled alternative in {@link grammarYaplParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitObject_id(grammarYaplParser.Object_idContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code mulDiv}
 	 * labeled alternative in {@link grammarYaplParser#expr}.
@@ -263,17 +181,17 @@ public interface grammarYaplListener extends ParseTreeListener {
 	 */
 	void exitNot(grammarYaplParser.NotContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code self}
+	 * Enter a parse tree produced by the {@code and}
 	 * labeled alternative in {@link grammarYaplParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void enterSelf(grammarYaplParser.SelfContext ctx);
+	void enterAnd(grammarYaplParser.AndContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code self}
+	 * Exit a parse tree produced by the {@code and}
 	 * labeled alternative in {@link grammarYaplParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void exitSelf(grammarYaplParser.SelfContext ctx);
+	void exitAnd(grammarYaplParser.AndContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code block}
 	 * labeled alternative in {@link grammarYaplParser#expr}.
@@ -310,6 +228,126 @@ public interface grammarYaplListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIf(grammarYaplParser.IfContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code new}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterNew(grammarYaplParser.NewContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code new}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitNew(grammarYaplParser.NewContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code comparison}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterComparison(grammarYaplParser.ComparisonContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code comparison}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitComparison(grammarYaplParser.ComparisonContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code or}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterOr(grammarYaplParser.OrContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code or}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitOr(grammarYaplParser.OrContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code type_id}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterType_id(grammarYaplParser.Type_idContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code type_id}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitType_id(grammarYaplParser.Type_idContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code addSub}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterAddSub(grammarYaplParser.AddSubContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code addSub}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitAddSub(grammarYaplParser.AddSubContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code static_dispatch}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterStatic_dispatch(grammarYaplParser.Static_dispatchContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code static_dispatch}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitStatic_dispatch(grammarYaplParser.Static_dispatchContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code eq}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterEq(grammarYaplParser.EqContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code eq}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitEq(grammarYaplParser.EqContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code parenthesis}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterParenthesis(grammarYaplParser.ParenthesisContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code parenthesis}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitParenthesis(grammarYaplParser.ParenthesisContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code object_id}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterObject_id(grammarYaplParser.Object_idContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code object_id}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitObject_id(grammarYaplParser.Object_idContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code self}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterSelf(grammarYaplParser.SelfContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code self}
+	 * labeled alternative in {@link grammarYaplParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitSelf(grammarYaplParser.SelfContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code assign}
 	 * labeled alternative in {@link grammarYaplParser#expr}.

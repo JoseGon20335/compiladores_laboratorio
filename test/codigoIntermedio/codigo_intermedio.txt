@@ -1,19 +1,9 @@
-CLASS A
+CLASS Main
 
-FUNCTION A.value
-	REGISTRO[0] = var
+FUNCTION Main.main
+	REGISTRO[0] = CALL out_string("Hello, World.\n")
 	RETURN REGISTRO[0]
-END FUNCTION A.value
+END FUNCTION Main.main
+END CLASS Main
 
-FUNCTION A.set_var
-	RETURN None
-END FUNCTION A.set_var
-
-FUNCTION A.method1
-	RETURN None
-END FUNCTION A.method1
-
-FUNCTION A.method2
-	RETURN None
-END FUNCTION A.method2
-END CLASS A
+CALL Main.main

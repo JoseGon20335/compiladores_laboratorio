@@ -50,21 +50,25 @@ class symbol_table():
 
 
     def getSymbol(self, varName, scope):
-        validScopes = self.getValidScopes(scope)
-        found = None
+        if varName != None and scope != None:
+            validScopes = self.getValidScopes(scope)
+            found = None
 
-        for validScope in validScopes:
-            fullName = validScope + "." + varName
-            if fullName in self.records:
-                found = self.records[fullName]
+            for validScope in validScopes:
+                fullName = validScope + "." + varName
+                for key in self.records:
+                    if key == fullName:
+                        found = self.records[key]
+                # if fullName in self.records:
+                #     found = self.records[fullName]
 
-        if found != None:
-            return found
-            
-        if scope != "Object":
-            return self.getSymbol(varName, "Object")
+            if found != None:
+                return found
+                
+            if scope != "Object":
+                return self.getSymbol(varName, "Object")
 
-        self.errors.append("getSymbol: Variable " + varName + " not declared")
+            self.errors.append("getSymbol: Variable " + varName + " not declared")
         return None
 
     def getType(self, varName, scope):
@@ -82,6 +86,29 @@ class symbol_table():
             tempString += scope
             validScopes.append(tempString)
         return validScopes
+    
+    def classExists(self, className):
+        key = "GLOBAL." + className
+        # Verificamos si la clave existe
+        if key in self.records:
+            # Si decides añadir la propiedad isDryRun a la clase symbol, descomenta la siguiente línea
+            # return not self.records[key].isDryRun
+            return True
+        else:
+            return False
+
+    def getAllInScope(self, scope):
+        variables = []
+
+        # Traverse the symbol table records.
+        for key in self.records:
+            # Check if the scope of the symbol matches the given scope.
+            if self.records[key].scope == scope:
+                # Add the symbol to the variables list.
+                variables.append(self.records[key])
+
+        # Return the list of variables in the given scope.
+        return variables
 
 class symbol():
     def __init__(self, id, type, line, scope):

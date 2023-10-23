@@ -64,8 +64,9 @@ program: (class_def SEMICOLON)+;
 
 class_def: CLASS TYPE_ID (INHERITS TYPE_ID)? LBRACE (feature SEMICOLON)* RBRACE;
 
-feature: OBJECT_ID (LPAREN (formal (COMMA formal)*)? RPAREN)? COLON TYPE_ID LBRACE expr RBRACE
-    | (TYPE_ID | OBJECT_ID) COLON TYPE_ID (ASSIGN expr)?;
+feature: OBJECT_ID (LPAREN (formal (COMMA formal)*)? RPAREN)? COLON TYPE_ID LBRACE expr RBRACE #method
+    | (TYPE_ID | OBJECT_ID) COLON TYPE_ID (ASSIGN expr)? #attribute
+;
 
 formal: OBJECT_ID COLON TYPE_ID;
 
@@ -82,6 +83,8 @@ expr: expr (AT TYPE_ID)? DOT (TYPE_ID | OBJECT_ID) LPAREN (expr (COMMA expr)*)? 
     | expr (PLUS|MINUS) expr #addSub
     | MINUS expr #minus
     | expr (LE|LT) expr #comparison
+    | expr '&' expr #and
+    | expr '|' expr #or
     | expr EQ expr #eq
     | NOT expr #not
     | (TYPE_ID | OBJECT_ID) ASSIGN expr #assign
