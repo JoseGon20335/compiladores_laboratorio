@@ -45,6 +45,13 @@ class symbol_table():
         
         return False
     
+    def getParams(self, id):
+        for key in self.records:
+            keySplit = key.split('.')
+            if keySplit[len(keySplit)-1] == id:
+                return self.records[key].params
+        return False
+    
     def addError(self, error):
         self.errors.append(error)
 

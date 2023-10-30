@@ -27,13 +27,53 @@ class visitor_yapl(grammarYaplVisitor):
             for method in self.defaultMethods[value]:
                 newSymbol = symbol(method, self.defaultMethods[value][method][1], ctx.start.line, value)
                 self.symbol_table.add(method, newSymbol, None, self.defaultMethods[value][method][0], None, None)
-                print("Class " + method)
+                print("CLASS " + method)
 
         reservados = ["Int", "String", "Bool", "IO", "Object"]
         for value in reservados:
             newSymbol = symbol(value, "class", ctx.start.line, "GLOBAL")
             self.symbol_table.add(value, newSymbol, None, None, None, None)
-            print("Class " + value)
+            print("CLASS " + value)
+
+        for i in ctx.children:
+            if hasattr(i, "CLASS"):
+                currentSymbol = i.TYPE_ID(0).getText()
+                type = i.CLASS().getText()
+                line = i.start.line
+
+                newSymbol = symbol(currentSymbol, type, line, self.scope)
+                self.symbol_table.add(currentSymbol, newSymbol, None, None, self.getByte(type), None)
+                print("Program child: " + currentSymbol)
+                tempScope = currentSymbol
+
+                for j in i.children:
+                    if isinstance(j, grammarYaplParser.MethodContext):
+                        currentSymbol = j.OBJECT_ID().symbol.text
+                        type = j.TYPE_ID().getText()
+                        line = j.start.line
+
+                        inputTypes = []
+                        for k in j.formal():
+                            inputTypes.append(k.TYPE_ID().symbol.text)
+
+                        newSymbol = symbol(currentSymbol, type, line, tempScope)
+                        self.symbol_table.add(currentSymbol, newSymbol, inputTypes, None, self.getByte(type), None)
+                        print("Program class child: " + currentSymbol)
+
+        for i in ctx.children:
+            if hasattr(i, 'CLASS') and i.INHERITS():
+                type = i.TYPE_ID(1).getText()
+                up = self.symbol_table.getSymbol(type, "GLOBAL")
+
+                if up != None:
+                    upInScopre = self.symbol_table.getAllInScope(type) 
+
+                    for j in upInScopre:
+                        newSymbol = symbol(j.id, j.type, j.line, i.TYPE_ID(0).getText())
+                        params = self.symbol_table.getParams(j.id)
+                        self.symbol_table.add(j.id, newSymbol, None, params, self.getByte(j.type), None)
+                        print("Program inherits: " + j.id)
+
         # Add program to symbol table
         self.visitChildren(ctx)
     
@@ -73,7 +113,6 @@ class visitor_yapl(grammarYaplVisitor):
         if self.symbol_table.classExists(self.scope):
             self.symbol_table.addError("Class " + self.scope + " already exists")
 
-        inheritsFrom = []
         # Check if class inherits from a valid class
         if ctx.INHERITS():
             parent_name = str(ctx.TYPE_ID(1).getText())
@@ -89,23 +128,23 @@ class visitor_yapl(grammarYaplVisitor):
 
             parentClass = self.symbol_table.getSymbol(parent_name, self.scope)
             if parentClass is not None:
-                inheritsFrom = [parentClass.varName]
-                tempParent = parentClass
+                # inheritsFrom = [parentClass.id]
+                # tempParent = parentClass
 
-                while tempParent.inheritsFrom:
-                    inheritsFrom.append(tempParent.inheritsFrom[0])
-                    tempParent = self.symbol_table.getSymbol(tempParent.inheritsFrom[0], self.scope)
+                # while tempParent.inheritsFrom:
+                #     inheritsFrom.append(tempParent.inheritsFrom[0])
+                #     tempParent = self.symbol_table.getSymbol(tempParent.inheritsFrom[0], self.scope)
 
                 parentMethods = self.symbol_table.getAllInScope(parent_name)
                 for method in parentMethods:
-                    print("Class " + self.scope + " inherits method " + method.varName)
-                    newSymbol = symbol(method.varName, method.dataType, method.line, self.scope)
-                    self.symbol_table.add(method.varName, newSymbol, None, method.paramTypes, method.byte)
-                    print("Class " + method.varName)
+                    print("Class " + self.scope + " inherits method " + method.id)
+                    newSymbol = symbol(method.id, method.type, method.line, self.scope)
+                    self.symbol_table.add(method.id, newSymbol, None, method.params, method.byte, None)
+                    print("Class " + method.id)
 
-        newSymbol = symbol(self.scope, ctx.CLASS().getText(), ctx.start.line, self.scope)
-        self.symbol_table.add(self.scope, newSymbol, inheritsFrom, None, None, None)
-        print("Class " + self.scope)
+        newSymbol = symbol(ctx.TYPE_ID(0).getText(), ctx.CLASS().getText(), ctx.start.line, "global")
+        self.symbol_table.add(ctx.TYPE_ID(0).getText(), newSymbol, None, None, None, None)
+        print("Class " + ctx.TYPE_ID(0).getText())
 
         # Visit children after validating class
         self.visitChildren(ctx)
@@ -538,20 +577,10 @@ class visitor_yapl(grammarYaplVisitor):
         expr = ctx.expr().getText()
         type = self.symbol_table.getType(expr, self.scope)
 
-        print(type)
-        print(self.symbol_table.records)
-
         for key, value in self.symbol_table.records.items():
             if type == key.split(".")[1]:
                 print("Neg: Symbol is of type " + type)
                 expr = type
-
-        # if type in self.symbol_table.records:
-        #     print("Neg: Symbol is of type " + type)
-        #     expr = type
-
-        print(expr)
-        print(self.scope)
 
         if self.symbol_table.getSymbol(expr, self.scope) != None:
             print("Neg: Symbol found " + expr)
