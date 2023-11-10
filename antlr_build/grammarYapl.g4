@@ -82,10 +82,9 @@ expr: expr (AT TYPE_ID)? DOT (TYPE_ID | OBJECT_ID) LPAREN (expr (COMMA expr)*)? 
     | expr (MULT|DIV) expr #mulDiv
     | expr (PLUS|MINUS) expr #addSub
     | MINUS expr #minus
-    | expr (LE|LT) expr #comparison
+    | expr (LE|LT|EQ) expr #comparison
     | expr '&' expr #and
     | expr '|' expr #or
-    | expr EQ expr #eq
     | NOT expr #not
     | (TYPE_ID | OBJECT_ID) ASSIGN expr #assign
     | LPAREN expr RPAREN #parenthesis

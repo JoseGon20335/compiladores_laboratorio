@@ -75,12 +75,29 @@ class symbol_table():
             if scope != "Object":
                 return self.getSymbol(varName, "Object")
 
-            self.errors.append("getSymbol: Variable " + varName + " not declared")
+            # self.errors.append("getSymbol: Variable " + varName + " not declared")
         return None
 
+    #REVISAR EL GETTYPE
     def getType(self, varName, scope):
-        symbol = self.getSymbol(varName, scope)
-        return symbol.type if symbol else None
+        if varName != None and scope != None:
+            validScopes = self.getValidScopes(scope)
+            found = None
+
+            for validScope in validScopes:
+                fullName = validScope + "." + varName
+                for key in self.records:
+                    if key == fullName:
+                        found = self.records[key]
+
+            if found != None:
+                return found.type
+                
+            if scope != "Object":
+                return self.getType(varName, "Object")
+
+            # self.errors.append("getSymbol: Variable " + varName + " not declared")
+        return None
 
     def getValidScopes(self, scope):
         validScopes = ["global"]

@@ -1,4 +1,4 @@
-# Generated from antlr_build/grammarYapl.g4 by ANTLR 4.13.1
+# Generated from antlr_build/grammarYapl.g4 by ANTLR 4.13.0
 from antlr4 import *
 if "." in __name__:
     from .grammarYaplParser import grammarYaplParser
@@ -34,8 +34,23 @@ class grammarYaplVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by grammarYaplParser#new.
+    def visitNew(self, ctx:grammarYaplParser.NewContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by grammarYaplParser#minus.
     def visitMinus(self, ctx:grammarYaplParser.MinusContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by grammarYaplParser#comparison.
+    def visitComparison(self, ctx:grammarYaplParser.ComparisonContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by grammarYaplParser#or.
+    def visitOr(self, ctx:grammarYaplParser.OrContext):
         return self.visitChildren(ctx)
 
 
@@ -59,13 +74,38 @@ class grammarYaplVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by grammarYaplParser#type_id.
+    def visitType_id(self, ctx:grammarYaplParser.Type_idContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by grammarYaplParser#addSub.
+    def visitAddSub(self, ctx:grammarYaplParser.AddSubContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by grammarYaplParser#integer.
     def visitInteger(self, ctx:grammarYaplParser.IntegerContext):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by grammarYaplParser#static_dispatch.
+    def visitStatic_dispatch(self, ctx:grammarYaplParser.Static_dispatchContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by grammarYaplParser#while.
     def visitWhile(self, ctx:grammarYaplParser.WhileContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by grammarYaplParser#parenthesis.
+    def visitParenthesis(self, ctx:grammarYaplParser.ParenthesisContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by grammarYaplParser#object_id.
+    def visitObject_id(self, ctx:grammarYaplParser.Object_idContext):
         return self.visitChildren(ctx)
 
 
@@ -89,6 +129,11 @@ class grammarYaplVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by grammarYaplParser#self.
+    def visitSelf(self, ctx:grammarYaplParser.SelfContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by grammarYaplParser#block.
     def visitBlock(self, ctx:grammarYaplParser.BlockContext):
         return self.visitChildren(ctx)
@@ -101,56 +146,6 @@ class grammarYaplVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by grammarYaplParser#if.
     def visitIf(self, ctx:grammarYaplParser.IfContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by grammarYaplParser#new.
-    def visitNew(self, ctx:grammarYaplParser.NewContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by grammarYaplParser#comparison.
-    def visitComparison(self, ctx:grammarYaplParser.ComparisonContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by grammarYaplParser#or.
-    def visitOr(self, ctx:grammarYaplParser.OrContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by grammarYaplParser#type_id.
-    def visitType_id(self, ctx:grammarYaplParser.Type_idContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by grammarYaplParser#addSub.
-    def visitAddSub(self, ctx:grammarYaplParser.AddSubContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by grammarYaplParser#static_dispatch.
-    def visitStatic_dispatch(self, ctx:grammarYaplParser.Static_dispatchContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by grammarYaplParser#eq.
-    def visitEq(self, ctx:grammarYaplParser.EqContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by grammarYaplParser#parenthesis.
-    def visitParenthesis(self, ctx:grammarYaplParser.ParenthesisContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by grammarYaplParser#object_id.
-    def visitObject_id(self, ctx:grammarYaplParser.Object_idContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by grammarYaplParser#self.
-    def visitSelf(self, ctx:grammarYaplParser.SelfContext):
         return self.visitChildren(ctx)
 
 

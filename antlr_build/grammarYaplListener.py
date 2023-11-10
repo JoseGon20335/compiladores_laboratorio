@@ -1,4 +1,4 @@
-# Generated from antlr_build/grammarYapl.g4 by ANTLR 4.13.1
+# Generated from antlr_build/grammarYapl.g4 by ANTLR 4.13.0
 from antlr4 import *
 if "." in __name__:
     from .grammarYaplParser import grammarYaplParser
@@ -53,12 +53,39 @@ class grammarYaplListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by grammarYaplParser#new.
+    def enterNew(self, ctx:grammarYaplParser.NewContext):
+        pass
+
+    # Exit a parse tree produced by grammarYaplParser#new.
+    def exitNew(self, ctx:grammarYaplParser.NewContext):
+        pass
+
+
     # Enter a parse tree produced by grammarYaplParser#minus.
     def enterMinus(self, ctx:grammarYaplParser.MinusContext):
         pass
 
     # Exit a parse tree produced by grammarYaplParser#minus.
     def exitMinus(self, ctx:grammarYaplParser.MinusContext):
+        pass
+
+
+    # Enter a parse tree produced by grammarYaplParser#comparison.
+    def enterComparison(self, ctx:grammarYaplParser.ComparisonContext):
+        pass
+
+    # Exit a parse tree produced by grammarYaplParser#comparison.
+    def exitComparison(self, ctx:grammarYaplParser.ComparisonContext):
+        pass
+
+
+    # Enter a parse tree produced by grammarYaplParser#or.
+    def enterOr(self, ctx:grammarYaplParser.OrContext):
+        pass
+
+    # Exit a parse tree produced by grammarYaplParser#or.
+    def exitOr(self, ctx:grammarYaplParser.OrContext):
         pass
 
 
@@ -98,6 +125,24 @@ class grammarYaplListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by grammarYaplParser#type_id.
+    def enterType_id(self, ctx:grammarYaplParser.Type_idContext):
+        pass
+
+    # Exit a parse tree produced by grammarYaplParser#type_id.
+    def exitType_id(self, ctx:grammarYaplParser.Type_idContext):
+        pass
+
+
+    # Enter a parse tree produced by grammarYaplParser#addSub.
+    def enterAddSub(self, ctx:grammarYaplParser.AddSubContext):
+        pass
+
+    # Exit a parse tree produced by grammarYaplParser#addSub.
+    def exitAddSub(self, ctx:grammarYaplParser.AddSubContext):
+        pass
+
+
     # Enter a parse tree produced by grammarYaplParser#integer.
     def enterInteger(self, ctx:grammarYaplParser.IntegerContext):
         pass
@@ -107,12 +152,39 @@ class grammarYaplListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by grammarYaplParser#static_dispatch.
+    def enterStatic_dispatch(self, ctx:grammarYaplParser.Static_dispatchContext):
+        pass
+
+    # Exit a parse tree produced by grammarYaplParser#static_dispatch.
+    def exitStatic_dispatch(self, ctx:grammarYaplParser.Static_dispatchContext):
+        pass
+
+
     # Enter a parse tree produced by grammarYaplParser#while.
     def enterWhile(self, ctx:grammarYaplParser.WhileContext):
         pass
 
     # Exit a parse tree produced by grammarYaplParser#while.
     def exitWhile(self, ctx:grammarYaplParser.WhileContext):
+        pass
+
+
+    # Enter a parse tree produced by grammarYaplParser#parenthesis.
+    def enterParenthesis(self, ctx:grammarYaplParser.ParenthesisContext):
+        pass
+
+    # Exit a parse tree produced by grammarYaplParser#parenthesis.
+    def exitParenthesis(self, ctx:grammarYaplParser.ParenthesisContext):
+        pass
+
+
+    # Enter a parse tree produced by grammarYaplParser#object_id.
+    def enterObject_id(self, ctx:grammarYaplParser.Object_idContext):
+        pass
+
+    # Exit a parse tree produced by grammarYaplParser#object_id.
+    def exitObject_id(self, ctx:grammarYaplParser.Object_idContext):
         pass
 
 
@@ -152,6 +224,15 @@ class grammarYaplListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by grammarYaplParser#self.
+    def enterSelf(self, ctx:grammarYaplParser.SelfContext):
+        pass
+
+    # Exit a parse tree produced by grammarYaplParser#self.
+    def exitSelf(self, ctx:grammarYaplParser.SelfContext):
+        pass
+
+
     # Enter a parse tree produced by grammarYaplParser#block.
     def enterBlock(self, ctx:grammarYaplParser.BlockContext):
         pass
@@ -176,96 +257,6 @@ class grammarYaplListener(ParseTreeListener):
 
     # Exit a parse tree produced by grammarYaplParser#if.
     def exitIf(self, ctx:grammarYaplParser.IfContext):
-        pass
-
-
-    # Enter a parse tree produced by grammarYaplParser#new.
-    def enterNew(self, ctx:grammarYaplParser.NewContext):
-        pass
-
-    # Exit a parse tree produced by grammarYaplParser#new.
-    def exitNew(self, ctx:grammarYaplParser.NewContext):
-        pass
-
-
-    # Enter a parse tree produced by grammarYaplParser#comparison.
-    def enterComparison(self, ctx:grammarYaplParser.ComparisonContext):
-        pass
-
-    # Exit a parse tree produced by grammarYaplParser#comparison.
-    def exitComparison(self, ctx:grammarYaplParser.ComparisonContext):
-        pass
-
-
-    # Enter a parse tree produced by grammarYaplParser#or.
-    def enterOr(self, ctx:grammarYaplParser.OrContext):
-        pass
-
-    # Exit a parse tree produced by grammarYaplParser#or.
-    def exitOr(self, ctx:grammarYaplParser.OrContext):
-        pass
-
-
-    # Enter a parse tree produced by grammarYaplParser#type_id.
-    def enterType_id(self, ctx:grammarYaplParser.Type_idContext):
-        pass
-
-    # Exit a parse tree produced by grammarYaplParser#type_id.
-    def exitType_id(self, ctx:grammarYaplParser.Type_idContext):
-        pass
-
-
-    # Enter a parse tree produced by grammarYaplParser#addSub.
-    def enterAddSub(self, ctx:grammarYaplParser.AddSubContext):
-        pass
-
-    # Exit a parse tree produced by grammarYaplParser#addSub.
-    def exitAddSub(self, ctx:grammarYaplParser.AddSubContext):
-        pass
-
-
-    # Enter a parse tree produced by grammarYaplParser#static_dispatch.
-    def enterStatic_dispatch(self, ctx:grammarYaplParser.Static_dispatchContext):
-        pass
-
-    # Exit a parse tree produced by grammarYaplParser#static_dispatch.
-    def exitStatic_dispatch(self, ctx:grammarYaplParser.Static_dispatchContext):
-        pass
-
-
-    # Enter a parse tree produced by grammarYaplParser#eq.
-    def enterEq(self, ctx:grammarYaplParser.EqContext):
-        pass
-
-    # Exit a parse tree produced by grammarYaplParser#eq.
-    def exitEq(self, ctx:grammarYaplParser.EqContext):
-        pass
-
-
-    # Enter a parse tree produced by grammarYaplParser#parenthesis.
-    def enterParenthesis(self, ctx:grammarYaplParser.ParenthesisContext):
-        pass
-
-    # Exit a parse tree produced by grammarYaplParser#parenthesis.
-    def exitParenthesis(self, ctx:grammarYaplParser.ParenthesisContext):
-        pass
-
-
-    # Enter a parse tree produced by grammarYaplParser#object_id.
-    def enterObject_id(self, ctx:grammarYaplParser.Object_idContext):
-        pass
-
-    # Exit a parse tree produced by grammarYaplParser#object_id.
-    def exitObject_id(self, ctx:grammarYaplParser.Object_idContext):
-        pass
-
-
-    # Enter a parse tree produced by grammarYaplParser#self.
-    def enterSelf(self, ctx:grammarYaplParser.SelfContext):
-        pass
-
-    # Exit a parse tree produced by grammarYaplParser#self.
-    def exitSelf(self, ctx:grammarYaplParser.SelfContext):
         pass
 
 
