@@ -144,3 +144,4 @@ class symbol():
         self.params = []
         self.byte = 0
         self.offset = 0
+        self.function = False

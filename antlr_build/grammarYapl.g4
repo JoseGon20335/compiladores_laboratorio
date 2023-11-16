@@ -61,37 +61,34 @@ ASSIGN  : '<-' ;
 
 // Grammar rules
 program: (class_def SEMICOLON)+;
-
 class_def: CLASS TYPE_ID (INHERITS TYPE_ID)? LBRACE (feature SEMICOLON)* RBRACE;
-
+formal: OBJECT_ID COLON TYPE_ID;
 feature: OBJECT_ID (LPAREN (formal (COMMA formal)*)? RPAREN)? COLON TYPE_ID LBRACE expr RBRACE #method
-    | (TYPE_ID | OBJECT_ID) COLON TYPE_ID (ASSIGN expr)? #attribute
+    | OBJECT_ID COLON TYPE_ID (ASSIGN expr)? #attribute
 ;
 
-formal: OBJECT_ID COLON TYPE_ID;
-
-expr: expr (AT TYPE_ID)? DOT (TYPE_ID | OBJECT_ID) LPAREN (expr (COMMA expr)*)? RPAREN #dispatch
-    | (TYPE_ID | OBJECT_ID) LPAREN (expr (COMMA expr)*)? RPAREN #static_dispatch
-    | IF expr THEN expr ELSE expr FI #if
-    | WHILE expr LOOP expr POOL #while
-    | LBRACE (expr SEMICOLON)+ RBRACE #block
-    | LET (TYPE_ID | OBJECT_ID) COLON TYPE_ID (ASSIGN expr)? (COMMA (TYPE_ID | OBJECT_ID) COLON TYPE_ID (ASSIGN expr)?)* IN expr #let
-    | NEW TYPE_ID #new
+expr: expr (AT TYPE_ID)? DOT OBJECT_ID LPAREN (expr (COMMA expr)*)? RPAREN #dispatch
     | NEG expr #neg
     | ISVOID expr #isvoid
     | expr (MULT|DIV) expr #mulDiv
     | expr (PLUS|MINUS) expr #addSub
-    | MINUS expr #minus
     | expr (LE|LT|EQ) expr #comparison
     | expr '&' expr #and
     | expr '|' expr #or
     | NOT expr #not
-    | (TYPE_ID | OBJECT_ID) ASSIGN expr #assign
+    | OBJECT_ID ASSIGN expr #assign
+    | OBJECT_ID LPAREN (expr (COMMA expr)*)? RPAREN #static_dispatch
+    | IF expr THEN expr ELSE expr FI #if
+    | WHILE expr LOOP expr POOL #while
+    | LBRACE (expr SEMICOLON)+ RBRACE #block
+    | LET OBJECT_ID COLON TYPE_ID (ASSIGN expr)? (COMMA OBJECT_ID COLON TYPE_ID (ASSIGN expr)?)* IN expr #let
+    | NEW TYPE_ID #new
+    | MINUS expr #minus
     | LPAREN expr RPAREN #parenthesis
+    | TYPE_ID #type_id
     | OBJECT_ID #object_id
     | INTEGER #integer
     | STRING #string
     | BOOL #bool
-    | TYPE_ID #type_id
     | 'self' #self
 ;

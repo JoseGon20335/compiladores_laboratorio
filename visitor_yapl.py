@@ -92,7 +92,73 @@ class visitor_yapl(grammarYaplVisitor):
             }
             temp.append(addValue)
         return temp
+
+    def fixable(self, tabla):
+
+        for key in tabla:
+            if tabla[key].scope == "global":
+                tabla[key].byte = 0
+
+    def defineFixable(self, nameType):
+        scopes = self.symbol_table.getAllInScope(nameType.id)
+        if nameType.type == "class":
+            sizeOrNone = self.getSizeOrNone(nameType)
+            if sizeOrNone != None:
+                nameType.byte = sizeOrNone
+                if len(temp) > 0:
+                    for temp in scopes:
+                        if temp.function:
+                            self.defineFixable(temp)
+                        else:
+                            temp.byte = self.defineSize(temp.type)
+                            nameType.byte += temp.byte
+        else:
+            if len(scopes) == 0:
+                if nameType != "class":
+                    nameType.byte = self.defineSize(nameType.type)
+                else:
+                    nameType.byte = 0
+            else:
+                for temp in scopes:
+                    if nameType.function:
+                        self.defineFixable(nameType)
+                    else:
+                        nameType.byte = self.defineSize(temp.type)
+                        symbol.byte += temp.byte
+
+                
+    def defineSize(self, temp):
+
+        sizeOrNone = self.getSizeOrNone(temp)
+
+        if sizeOrNone != None:
+            return sizeOrNone
+        elif "global." + temp in self.symbol_table:
+            if self.symbol_table["gobal." + temp].byte != -1:
+                return self.symbol_table["global." + temp].byte
+            else:
+                self.symbol_table["global." + temp].byte = 0
+                self.defineFixable(self.symbol_table["global." + temp])
+                return self.symbol_table["global." + temp].byte
+        else:
+            return 8
     
+    def getSizeOrNone(self, nameType):
+        if nameType.type == "Int":
+            return 4
+        elif nameType.type == "String":
+            return 128
+        elif nameType.type == "Bool":
+            return 1
+        elif nameType.type == "SELF_TYPE":
+            return 8
+        elif nameType.type == "Object":
+            return 8
+        elif nameType.type == "IO":
+            return 14
+        else:
+            return None
+
     def getByte(self, type):
         if type == "Int":
             return 8
@@ -149,7 +215,7 @@ class visitor_yapl(grammarYaplVisitor):
         # Visit children after validating class
         self.visitChildren(ctx)
     
-    def visitMethod(self, ctx: grammarYaplParser.FeatureContext):
+    def visitMethod(self, ctx:grammarYaplParser.FeatureContext):
         print("_____Method_____")
         currentSymbol = str(ctx.OBJECT_ID().getText())
         data_type = str(ctx.TYPE_ID().getText())
@@ -181,8 +247,8 @@ class visitor_yapl(grammarYaplVisitor):
     def visitAttribute(self, ctx:grammarYaplParser.AttributeContext):
         print("_____Attribute_____")
         currentSymbol = ctx.OBJECT_ID().symbol.text
-        type = ctx.TYPE_ID(0).getText()
-        line = ctx.start.line
+        type = ctx.TYPE_ID().getText()
+        line = ctx.TYPE_ID().symbol.line
 
         newSymbol = symbol(currentSymbol, type, line, self.scope)
         self.symbol_table.add(currentSymbol, newSymbol, None, None, self.getByte(type), None)
@@ -360,7 +426,7 @@ class visitor_yapl(grammarYaplVisitor):
         print("Bool ", name)
         self.visitChildren(ctx)
         
-    def visitMulDiv(self, ctx: grammarYaplParser.MulDivContext):
+    def visitMulDiv(self, ctx:grammarYaplParser.MulDivContext):
         print("_____MulDiv_____")
         # Visit children first
         self.visitChildren(ctx)
@@ -558,6 +624,13 @@ class visitor_yapl(grammarYaplVisitor):
     def visitObject_id(self, ctx:grammarYaplParser.Object_idContext):
         print("_____Object_id_____")
         print("Object_id ", ctx.OBJECT_ID().getText())
+        if(ctx.OBJECT_ID().getText() == 'true' or ctx.OBJECT_ID().getText() == 'false'):
+            type = "Bool"
+            name = ctx.OBJECT_ID().getText()
+            print("Bool ", name)
+            newSymbol = symbol(name, type, ctx.start.line, self.scope)
+            self.symbol_table.add(name, newSymbol, None, None, self.getByte(type), None)
+
     
     def visitNeg(self, ctx:grammarYaplParser.NegContext):
         print("_____Neg_____")
@@ -586,7 +659,7 @@ class visitor_yapl(grammarYaplVisitor):
         else:
             print("Neg: Symbol not found " + expr)
 
-    def visitNot(self, ctx: grammarYaplParser.NotContext):
+    def visitNot(self, ctx:grammarYaplParser.NotContext):
         print("_____Not_____")
         # Visit children before validating
         self.visitChildren(ctx)
@@ -655,7 +728,7 @@ class visitor_yapl(grammarYaplVisitor):
 
         self.scope = scopeLegacy
     
-    def visitIf(self, ctx: grammarYaplParser.IfContext):
+    def visitIf(self, ctx:grammarYaplParser.IfContext):
         print("_____If_____")
         # Visit children before validating
         self.visitChildren(ctx)
@@ -689,7 +762,7 @@ class visitor_yapl(grammarYaplVisitor):
         else:
             print("If: Symbol not found " + expr)
 
-    def visitAssign(self, ctx: grammarYaplParser.AssignContext):
+    def visitAssign(self, ctx:grammarYaplParser.AssignContext):
         print("_____Assign_____")
         # Visit children before validating
         self.visitChildren(ctx)

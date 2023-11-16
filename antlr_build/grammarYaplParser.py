@@ -1,4 +1,4 @@
-# Generated from antlr_build/grammarYapl.g4 by ANTLR 4.13.0
+# Generated from antlr_build/grammarYapl.g4 by ANTLR 4.13.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -15,72 +15,72 @@ def serializedATN():
         5,1,28,8,1,10,1,12,1,31,9,1,1,1,1,1,1,2,1,2,1,2,1,2,1,2,5,2,40,8,
         2,10,2,12,2,43,9,2,3,2,45,8,2,1,2,3,2,48,8,2,1,2,1,2,1,2,1,2,1,2,
         1,2,1,2,1,2,1,2,1,2,1,2,3,2,61,8,2,3,2,63,8,2,1,3,1,3,1,3,1,3,1,
-        4,1,4,1,4,1,4,1,4,1,4,5,4,75,8,4,10,4,12,4,78,9,4,3,4,80,8,4,1,4,
+        4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,5,4,84,
+        8,4,10,4,12,4,87,9,4,3,4,89,8,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,
+        1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,4,4,110,8,4,11,4,12,
+        4,111,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,3,4,122,8,4,1,4,1,4,1,4,1,
+        4,1,4,1,4,3,4,130,8,4,5,4,132,8,4,10,4,12,4,135,9,4,1,4,1,4,1,4,
+        1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,3,4,153,8,4,
         1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,
-        1,4,1,4,4,4,101,8,4,11,4,12,4,102,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,
-        4,3,4,113,8,4,1,4,1,4,1,4,1,4,1,4,1,4,3,4,121,8,4,5,4,123,8,4,10,
-        4,12,4,126,9,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,
-        4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,3,4,153,8,4,1,
-        4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,
-        4,1,4,3,4,173,8,4,1,4,1,4,1,4,1,4,1,4,1,4,5,4,181,8,4,10,4,12,4,
-        184,9,4,3,4,186,8,4,1,4,5,4,189,8,4,10,4,12,4,192,9,4,1,4,0,1,8,
-        5,0,2,4,6,8,0,4,1,0,18,19,1,0,39,40,1,0,41,42,1,0,43,45,228,0,13,
-        1,0,0,0,2,17,1,0,0,0,4,62,1,0,0,0,6,64,1,0,0,0,8,152,1,0,0,0,10,
-        11,3,2,1,0,11,12,5,34,0,0,12,14,1,0,0,0,13,10,1,0,0,0,14,15,1,0,
-        0,0,15,13,1,0,0,0,15,16,1,0,0,0,16,1,1,0,0,0,17,18,5,4,0,0,18,21,
-        5,18,0,0,19,20,5,9,0,0,20,22,5,18,0,0,21,19,1,0,0,0,21,22,1,0,0,
-        0,22,23,1,0,0,0,23,29,5,29,0,0,24,25,3,4,2,0,25,26,5,34,0,0,26,28,
-        1,0,0,0,27,24,1,0,0,0,28,31,1,0,0,0,29,27,1,0,0,0,29,30,1,0,0,0,
-        30,32,1,0,0,0,31,29,1,0,0,0,32,33,5,30,0,0,33,3,1,0,0,0,34,47,5,
-        19,0,0,35,44,5,27,0,0,36,41,3,6,3,0,37,38,5,35,0,0,38,40,3,6,3,0,
-        39,37,1,0,0,0,40,43,1,0,0,0,41,39,1,0,0,0,41,42,1,0,0,0,42,45,1,
-        0,0,0,43,41,1,0,0,0,44,36,1,0,0,0,44,45,1,0,0,0,45,46,1,0,0,0,46,
-        48,5,28,0,0,47,35,1,0,0,0,47,48,1,0,0,0,48,49,1,0,0,0,49,50,5,33,
-        0,0,50,51,5,18,0,0,51,52,5,29,0,0,52,53,3,8,4,0,53,54,5,30,0,0,54,
-        63,1,0,0,0,55,56,7,0,0,0,56,57,5,33,0,0,57,60,5,18,0,0,58,59,5,52,
-        0,0,59,61,3,8,4,0,60,58,1,0,0,0,60,61,1,0,0,0,61,63,1,0,0,0,62,34,
-        1,0,0,0,62,55,1,0,0,0,63,5,1,0,0,0,64,65,5,19,0,0,65,66,5,33,0,0,
-        66,67,5,18,0,0,67,7,1,0,0,0,68,69,6,4,-1,0,69,70,7,0,0,0,70,79,5,
-        27,0,0,71,76,3,8,4,0,72,73,5,35,0,0,73,75,3,8,4,0,74,72,1,0,0,0,
-        75,78,1,0,0,0,76,74,1,0,0,0,76,77,1,0,0,0,77,80,1,0,0,0,78,76,1,
-        0,0,0,79,71,1,0,0,0,79,80,1,0,0,0,80,81,1,0,0,0,81,153,5,28,0,0,
-        82,83,5,7,0,0,83,84,3,8,4,0,84,85,5,13,0,0,85,86,3,8,4,0,86,87,5,
-        5,0,0,87,88,3,8,4,0,88,89,5,6,0,0,89,153,1,0,0,0,90,91,5,14,0,0,
-        91,92,3,8,4,0,92,93,5,11,0,0,93,94,3,8,4,0,94,95,5,12,0,0,95,153,
-        1,0,0,0,96,100,5,29,0,0,97,98,3,8,4,0,98,99,5,34,0,0,99,101,1,0,
-        0,0,100,97,1,0,0,0,101,102,1,0,0,0,102,100,1,0,0,0,102,103,1,0,0,
-        0,103,104,1,0,0,0,104,105,5,30,0,0,105,153,1,0,0,0,106,107,5,17,
-        0,0,107,108,7,0,0,0,108,109,5,33,0,0,109,112,5,18,0,0,110,111,5,
-        52,0,0,111,113,3,8,4,0,112,110,1,0,0,0,112,113,1,0,0,0,113,124,1,
-        0,0,0,114,115,5,35,0,0,115,116,7,0,0,0,116,117,5,33,0,0,117,120,
-        5,18,0,0,118,119,5,52,0,0,119,121,3,8,4,0,120,118,1,0,0,0,120,121,
-        1,0,0,0,121,123,1,0,0,0,122,114,1,0,0,0,123,126,1,0,0,0,124,122,
-        1,0,0,0,124,125,1,0,0,0,125,127,1,0,0,0,126,124,1,0,0,0,127,128,
-        5,8,0,0,128,153,3,8,4,19,129,130,5,15,0,0,130,153,5,18,0,0,131,132,
-        5,37,0,0,132,153,3,8,4,17,133,134,5,10,0,0,134,153,3,8,4,16,135,
-        136,5,42,0,0,136,153,3,8,4,13,137,138,5,16,0,0,138,153,3,8,4,9,139,
-        140,7,0,0,0,140,141,5,52,0,0,141,153,3,8,4,8,142,143,5,27,0,0,143,
-        144,3,8,4,0,144,145,5,28,0,0,145,153,1,0,0,0,146,153,5,19,0,0,147,
-        153,5,20,0,0,148,153,5,22,0,0,149,153,5,21,0,0,150,153,5,18,0,0,
-        151,153,5,3,0,0,152,68,1,0,0,0,152,82,1,0,0,0,152,90,1,0,0,0,152,
-        96,1,0,0,0,152,106,1,0,0,0,152,129,1,0,0,0,152,131,1,0,0,0,152,133,
-        1,0,0,0,152,135,1,0,0,0,152,137,1,0,0,0,152,139,1,0,0,0,152,142,
-        1,0,0,0,152,146,1,0,0,0,152,147,1,0,0,0,152,148,1,0,0,0,152,149,
-        1,0,0,0,152,150,1,0,0,0,152,151,1,0,0,0,153,190,1,0,0,0,154,155,
-        10,15,0,0,155,156,7,1,0,0,156,189,3,8,4,16,157,158,10,14,0,0,158,
-        159,7,2,0,0,159,189,3,8,4,15,160,161,10,12,0,0,161,162,7,3,0,0,162,
-        189,3,8,4,13,163,164,10,11,0,0,164,165,5,1,0,0,165,189,3,8,4,12,
-        166,167,10,10,0,0,167,168,5,2,0,0,168,189,3,8,4,11,169,172,10,24,
-        0,0,170,171,5,38,0,0,171,173,5,18,0,0,172,170,1,0,0,0,172,173,1,
-        0,0,0,173,174,1,0,0,0,174,175,5,36,0,0,175,176,7,0,0,0,176,185,5,
-        27,0,0,177,182,3,8,4,0,178,179,5,35,0,0,179,181,3,8,4,0,180,178,
-        1,0,0,0,181,184,1,0,0,0,182,180,1,0,0,0,182,183,1,0,0,0,183,186,
-        1,0,0,0,184,182,1,0,0,0,185,177,1,0,0,0,185,186,1,0,0,0,186,187,
-        1,0,0,0,187,189,5,28,0,0,188,154,1,0,0,0,188,157,1,0,0,0,188,160,
-        1,0,0,0,188,163,1,0,0,0,188,166,1,0,0,0,188,169,1,0,0,0,189,192,
-        1,0,0,0,190,188,1,0,0,0,190,191,1,0,0,0,191,9,1,0,0,0,192,190,1,
-        0,0,0,20,15,21,29,41,44,47,60,62,76,79,102,112,120,124,152,172,182,
-        185,188,190
+        1,4,1,4,3,4,173,8,4,1,4,1,4,1,4,1,4,1,4,1,4,5,4,181,8,4,10,4,12,
+        4,184,9,4,3,4,186,8,4,1,4,5,4,189,8,4,10,4,12,4,192,9,4,1,4,0,1,
+        8,5,0,2,4,6,8,0,3,1,0,39,40,1,0,41,42,1,0,43,45,228,0,13,1,0,0,0,
+        2,17,1,0,0,0,4,62,1,0,0,0,6,64,1,0,0,0,8,152,1,0,0,0,10,11,3,2,1,
+        0,11,12,5,34,0,0,12,14,1,0,0,0,13,10,1,0,0,0,14,15,1,0,0,0,15,13,
+        1,0,0,0,15,16,1,0,0,0,16,1,1,0,0,0,17,18,5,4,0,0,18,21,5,18,0,0,
+        19,20,5,9,0,0,20,22,5,18,0,0,21,19,1,0,0,0,21,22,1,0,0,0,22,23,1,
+        0,0,0,23,29,5,29,0,0,24,25,3,4,2,0,25,26,5,34,0,0,26,28,1,0,0,0,
+        27,24,1,0,0,0,28,31,1,0,0,0,29,27,1,0,0,0,29,30,1,0,0,0,30,32,1,
+        0,0,0,31,29,1,0,0,0,32,33,5,30,0,0,33,3,1,0,0,0,34,47,5,19,0,0,35,
+        44,5,27,0,0,36,41,3,6,3,0,37,38,5,35,0,0,38,40,3,6,3,0,39,37,1,0,
+        0,0,40,43,1,0,0,0,41,39,1,0,0,0,41,42,1,0,0,0,42,45,1,0,0,0,43,41,
+        1,0,0,0,44,36,1,0,0,0,44,45,1,0,0,0,45,46,1,0,0,0,46,48,5,28,0,0,
+        47,35,1,0,0,0,47,48,1,0,0,0,48,49,1,0,0,0,49,50,5,33,0,0,50,51,5,
+        18,0,0,51,52,5,29,0,0,52,53,3,8,4,0,53,54,5,30,0,0,54,63,1,0,0,0,
+        55,56,5,19,0,0,56,57,5,33,0,0,57,60,5,18,0,0,58,59,5,52,0,0,59,61,
+        3,8,4,0,60,58,1,0,0,0,60,61,1,0,0,0,61,63,1,0,0,0,62,34,1,0,0,0,
+        62,55,1,0,0,0,63,5,1,0,0,0,64,65,5,19,0,0,65,66,5,33,0,0,66,67,5,
+        18,0,0,67,7,1,0,0,0,68,69,6,4,-1,0,69,70,5,37,0,0,70,153,3,8,4,23,
+        71,72,5,10,0,0,72,153,3,8,4,22,73,74,5,16,0,0,74,153,3,8,4,16,75,
+        76,5,19,0,0,76,77,5,52,0,0,77,153,3,8,4,15,78,79,5,19,0,0,79,88,
+        5,27,0,0,80,85,3,8,4,0,81,82,5,35,0,0,82,84,3,8,4,0,83,81,1,0,0,
+        0,84,87,1,0,0,0,85,83,1,0,0,0,85,86,1,0,0,0,86,89,1,0,0,0,87,85,
+        1,0,0,0,88,80,1,0,0,0,88,89,1,0,0,0,89,90,1,0,0,0,90,153,5,28,0,
+        0,91,92,5,7,0,0,92,93,3,8,4,0,93,94,5,13,0,0,94,95,3,8,4,0,95,96,
+        5,5,0,0,96,97,3,8,4,0,97,98,5,6,0,0,98,153,1,0,0,0,99,100,5,14,0,
+        0,100,101,3,8,4,0,101,102,5,11,0,0,102,103,3,8,4,0,103,104,5,12,
+        0,0,104,153,1,0,0,0,105,109,5,29,0,0,106,107,3,8,4,0,107,108,5,34,
+        0,0,108,110,1,0,0,0,109,106,1,0,0,0,110,111,1,0,0,0,111,109,1,0,
+        0,0,111,112,1,0,0,0,112,113,1,0,0,0,113,114,5,30,0,0,114,153,1,0,
+        0,0,115,116,5,17,0,0,116,117,5,19,0,0,117,118,5,33,0,0,118,121,5,
+        18,0,0,119,120,5,52,0,0,120,122,3,8,4,0,121,119,1,0,0,0,121,122,
+        1,0,0,0,122,133,1,0,0,0,123,124,5,35,0,0,124,125,5,19,0,0,125,126,
+        5,33,0,0,126,129,5,18,0,0,127,128,5,52,0,0,128,130,3,8,4,0,129,127,
+        1,0,0,0,129,130,1,0,0,0,130,132,1,0,0,0,131,123,1,0,0,0,132,135,
+        1,0,0,0,133,131,1,0,0,0,133,134,1,0,0,0,134,136,1,0,0,0,135,133,
+        1,0,0,0,136,137,5,8,0,0,137,153,3,8,4,10,138,139,5,15,0,0,139,153,
+        5,18,0,0,140,141,5,42,0,0,141,153,3,8,4,8,142,143,5,27,0,0,143,144,
+        3,8,4,0,144,145,5,28,0,0,145,153,1,0,0,0,146,153,5,18,0,0,147,153,
+        5,19,0,0,148,153,5,20,0,0,149,153,5,22,0,0,150,153,5,21,0,0,151,
+        153,5,3,0,0,152,68,1,0,0,0,152,71,1,0,0,0,152,73,1,0,0,0,152,75,
+        1,0,0,0,152,78,1,0,0,0,152,91,1,0,0,0,152,99,1,0,0,0,152,105,1,0,
+        0,0,152,115,1,0,0,0,152,138,1,0,0,0,152,140,1,0,0,0,152,142,1,0,
+        0,0,152,146,1,0,0,0,152,147,1,0,0,0,152,148,1,0,0,0,152,149,1,0,
+        0,0,152,150,1,0,0,0,152,151,1,0,0,0,153,190,1,0,0,0,154,155,10,21,
+        0,0,155,156,7,0,0,0,156,189,3,8,4,22,157,158,10,20,0,0,158,159,7,
+        1,0,0,159,189,3,8,4,21,160,161,10,19,0,0,161,162,7,2,0,0,162,189,
+        3,8,4,20,163,164,10,18,0,0,164,165,5,1,0,0,165,189,3,8,4,19,166,
+        167,10,17,0,0,167,168,5,2,0,0,168,189,3,8,4,18,169,172,10,24,0,0,
+        170,171,5,38,0,0,171,173,5,18,0,0,172,170,1,0,0,0,172,173,1,0,0,
+        0,173,174,1,0,0,0,174,175,5,36,0,0,175,176,5,19,0,0,176,185,5,27,
+        0,0,177,182,3,8,4,0,178,179,5,35,0,0,179,181,3,8,4,0,180,178,1,0,
+        0,0,181,184,1,0,0,0,182,180,1,0,0,0,182,183,1,0,0,0,183,186,1,0,
+        0,0,184,182,1,0,0,0,185,177,1,0,0,0,185,186,1,0,0,0,186,187,1,0,
+        0,0,187,189,5,28,0,0,188,154,1,0,0,0,188,157,1,0,0,0,188,160,1,0,
+        0,0,188,163,1,0,0,0,188,166,1,0,0,0,188,169,1,0,0,0,189,192,1,0,
+        0,0,190,188,1,0,0,0,190,191,1,0,0,0,191,9,1,0,0,0,192,190,1,0,0,
+        0,20,15,21,29,41,44,47,60,62,85,88,111,121,129,133,152,172,182,185,
+        188,190
     ]
 
 class grammarYaplParser ( Parser ):
@@ -179,7 +179,7 @@ class grammarYaplParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.13.0")
+        self.checkVersion("4.13.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -340,7 +340,7 @@ class grammarYaplParser ( Parser ):
             self.state = 29
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==18 or _la==19:
+            while _la==19:
                 self.state = 24
                 self.feature()
                 self.state = 25
@@ -433,15 +433,12 @@ class grammarYaplParser ( Parser ):
             super().__init__(parser)
             self.copyFrom(ctx)
 
-        def COLON(self):
-            return self.getToken(grammarYaplParser.COLON, 0)
-        def TYPE_ID(self, i:int=None):
-            if i is None:
-                return self.getTokens(grammarYaplParser.TYPE_ID)
-            else:
-                return self.getToken(grammarYaplParser.TYPE_ID, i)
         def OBJECT_ID(self):
             return self.getToken(grammarYaplParser.OBJECT_ID, 0)
+        def COLON(self):
+            return self.getToken(grammarYaplParser.COLON, 0)
+        def TYPE_ID(self):
+            return self.getToken(grammarYaplParser.TYPE_ID, 0)
         def ASSIGN(self):
             return self.getToken(grammarYaplParser.ASSIGN, 0)
         def expr(self):
@@ -524,12 +521,7 @@ class grammarYaplParser ( Parser ):
                 localctx = grammarYaplParser.AttributeContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
                 self.state = 55
-                _la = self._input.LA(1)
-                if not(_la==18 or _la==19):
-                    self._errHandler.recoverInline(self)
-                else:
-                    self._errHandler.reportMatch(self)
-                    self.consume()
+                self.match(grammarYaplParser.OBJECT_ID)
                 self.state = 56
                 self.match(grammarYaplParser.COLON)
                 self.state = 57
@@ -758,19 +750,16 @@ class grammarYaplParser ( Parser ):
 
         def DOT(self):
             return self.getToken(grammarYaplParser.DOT, 0)
+        def OBJECT_ID(self):
+            return self.getToken(grammarYaplParser.OBJECT_ID, 0)
         def LPAREN(self):
             return self.getToken(grammarYaplParser.LPAREN, 0)
         def RPAREN(self):
             return self.getToken(grammarYaplParser.RPAREN, 0)
-        def TYPE_ID(self, i:int=None):
-            if i is None:
-                return self.getTokens(grammarYaplParser.TYPE_ID)
-            else:
-                return self.getToken(grammarYaplParser.TYPE_ID, i)
-        def OBJECT_ID(self):
-            return self.getToken(grammarYaplParser.OBJECT_ID, 0)
         def AT(self):
             return self.getToken(grammarYaplParser.AT, 0)
+        def TYPE_ID(self):
+            return self.getToken(grammarYaplParser.TYPE_ID, 0)
         def COMMA(self, i:int=None):
             if i is None:
                 return self.getTokens(grammarYaplParser.COMMA)
@@ -953,14 +942,12 @@ class grammarYaplParser ( Parser ):
             super().__init__(parser)
             self.copyFrom(ctx)
 
+        def OBJECT_ID(self):
+            return self.getToken(grammarYaplParser.OBJECT_ID, 0)
         def LPAREN(self):
             return self.getToken(grammarYaplParser.LPAREN, 0)
         def RPAREN(self):
             return self.getToken(grammarYaplParser.RPAREN, 0)
-        def TYPE_ID(self):
-            return self.getToken(grammarYaplParser.TYPE_ID, 0)
-        def OBJECT_ID(self):
-            return self.getToken(grammarYaplParser.OBJECT_ID, 0)
         def expr(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(grammarYaplParser.ExprContext)
@@ -1256,6 +1243,11 @@ class grammarYaplParser ( Parser ):
 
         def LET(self):
             return self.getToken(grammarYaplParser.LET, 0)
+        def OBJECT_ID(self, i:int=None):
+            if i is None:
+                return self.getTokens(grammarYaplParser.OBJECT_ID)
+            else:
+                return self.getToken(grammarYaplParser.OBJECT_ID, i)
         def COLON(self, i:int=None):
             if i is None:
                 return self.getTokens(grammarYaplParser.COLON)
@@ -1274,11 +1266,6 @@ class grammarYaplParser ( Parser ):
             else:
                 return self.getTypedRuleContext(grammarYaplParser.ExprContext,i)
 
-        def OBJECT_ID(self, i:int=None):
-            if i is None:
-                return self.getTokens(grammarYaplParser.OBJECT_ID)
-            else:
-                return self.getToken(grammarYaplParser.OBJECT_ID, i)
         def ASSIGN(self, i:int=None):
             if i is None:
                 return self.getTokens(grammarYaplParser.ASSIGN)
@@ -1347,15 +1334,13 @@ class grammarYaplParser ( Parser ):
             super().__init__(parser)
             self.copyFrom(ctx)
 
+        def OBJECT_ID(self):
+            return self.getToken(grammarYaplParser.OBJECT_ID, 0)
         def ASSIGN(self):
             return self.getToken(grammarYaplParser.ASSIGN, 0)
         def expr(self):
             return self.getTypedRuleContext(grammarYaplParser.ExprContext,0)
 
-        def TYPE_ID(self):
-            return self.getToken(grammarYaplParser.TYPE_ID, 0)
-        def OBJECT_ID(self):
-            return self.getToken(grammarYaplParser.OBJECT_ID, 0)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAssign" ):
@@ -1387,230 +1372,210 @@ class grammarYaplParser ( Parser ):
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,14,self._ctx)
             if la_ == 1:
-                localctx = grammarYaplParser.Static_dispatchContext(self, localctx)
+                localctx = grammarYaplParser.NegContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
 
                 self.state = 69
-                _la = self._input.LA(1)
-                if not(_la==18 or _la==19):
-                    self._errHandler.recoverInline(self)
-                else:
-                    self._errHandler.reportMatch(self)
-                    self.consume()
+                self.match(grammarYaplParser.NEG)
                 self.state = 70
-                self.match(grammarYaplParser.LPAREN)
+                self.expr(23)
+                pass
+
+            elif la_ == 2:
+                localctx = grammarYaplParser.IsvoidContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 71
+                self.match(grammarYaplParser.ISVOID)
+                self.state = 72
+                self.expr(22)
+                pass
+
+            elif la_ == 3:
+                localctx = grammarYaplParser.NotContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 73
+                self.match(grammarYaplParser.NOT)
+                self.state = 74
+                self.expr(16)
+                pass
+
+            elif la_ == 4:
+                localctx = grammarYaplParser.AssignContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 75
+                self.match(grammarYaplParser.OBJECT_ID)
+                self.state = 76
+                self.match(grammarYaplParser.ASSIGN)
+                self.state = 77
+                self.expr(15)
+                pass
+
+            elif la_ == 5:
+                localctx = grammarYaplParser.Static_dispatchContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 78
+                self.match(grammarYaplParser.OBJECT_ID)
                 self.state = 79
+                self.match(grammarYaplParser.LPAREN)
+                self.state = 88
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if (((_la) & ~0x3f) == 0 and ((1 << _la) & 4536164926600) != 0):
-                    self.state = 71
+                    self.state = 80
                     self.expr(0)
-                    self.state = 76
+                    self.state = 85
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     while _la==35:
-                        self.state = 72
+                        self.state = 81
                         self.match(grammarYaplParser.COMMA)
-                        self.state = 73
+                        self.state = 82
                         self.expr(0)
-                        self.state = 78
+                        self.state = 87
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
 
 
 
-                self.state = 81
+                self.state = 90
                 self.match(grammarYaplParser.RPAREN)
                 pass
 
-            elif la_ == 2:
+            elif la_ == 6:
                 localctx = grammarYaplParser.IfContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 82
+                self.state = 91
                 self.match(grammarYaplParser.IF)
-                self.state = 83
+                self.state = 92
                 self.expr(0)
-                self.state = 84
+                self.state = 93
                 self.match(grammarYaplParser.THEN)
-                self.state = 85
+                self.state = 94
                 self.expr(0)
-                self.state = 86
+                self.state = 95
                 self.match(grammarYaplParser.ELSE)
-                self.state = 87
+                self.state = 96
                 self.expr(0)
-                self.state = 88
+                self.state = 97
                 self.match(grammarYaplParser.FI)
                 pass
 
-            elif la_ == 3:
+            elif la_ == 7:
                 localctx = grammarYaplParser.WhileContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 90
+                self.state = 99
                 self.match(grammarYaplParser.WHILE)
-                self.state = 91
+                self.state = 100
                 self.expr(0)
-                self.state = 92
+                self.state = 101
                 self.match(grammarYaplParser.LOOP)
-                self.state = 93
+                self.state = 102
                 self.expr(0)
-                self.state = 94
+                self.state = 103
                 self.match(grammarYaplParser.POOL)
                 pass
 
-            elif la_ == 4:
+            elif la_ == 8:
                 localctx = grammarYaplParser.BlockContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 96
+                self.state = 105
                 self.match(grammarYaplParser.LBRACE)
-                self.state = 100 
+                self.state = 109 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
-                    self.state = 97
+                    self.state = 106
                     self.expr(0)
-                    self.state = 98
+                    self.state = 107
                     self.match(grammarYaplParser.SEMICOLON)
-                    self.state = 102 
+                    self.state = 111 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 4536164926600) != 0)):
                         break
 
-                self.state = 104
+                self.state = 113
                 self.match(grammarYaplParser.RBRACE)
                 pass
 
-            elif la_ == 5:
+            elif la_ == 9:
                 localctx = grammarYaplParser.LetContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 106
+                self.state = 115
                 self.match(grammarYaplParser.LET)
-                self.state = 107
-                _la = self._input.LA(1)
-                if not(_la==18 or _la==19):
-                    self._errHandler.recoverInline(self)
-                else:
-                    self._errHandler.reportMatch(self)
-                    self.consume()
-                self.state = 108
+                self.state = 116
+                self.match(grammarYaplParser.OBJECT_ID)
+                self.state = 117
                 self.match(grammarYaplParser.COLON)
-                self.state = 109
+                self.state = 118
                 self.match(grammarYaplParser.TYPE_ID)
-                self.state = 112
+                self.state = 121
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==52:
-                    self.state = 110
+                    self.state = 119
                     self.match(grammarYaplParser.ASSIGN)
-                    self.state = 111
+                    self.state = 120
                     self.expr(0)
 
 
-                self.state = 124
+                self.state = 133
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==35:
-                    self.state = 114
+                    self.state = 123
                     self.match(grammarYaplParser.COMMA)
-                    self.state = 115
-                    _la = self._input.LA(1)
-                    if not(_la==18 or _la==19):
-                        self._errHandler.recoverInline(self)
-                    else:
-                        self._errHandler.reportMatch(self)
-                        self.consume()
-                    self.state = 116
+                    self.state = 124
+                    self.match(grammarYaplParser.OBJECT_ID)
+                    self.state = 125
                     self.match(grammarYaplParser.COLON)
-                    self.state = 117
+                    self.state = 126
                     self.match(grammarYaplParser.TYPE_ID)
-                    self.state = 120
+                    self.state = 129
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if _la==52:
-                        self.state = 118
+                        self.state = 127
                         self.match(grammarYaplParser.ASSIGN)
-                        self.state = 119
+                        self.state = 128
                         self.expr(0)
 
 
-                    self.state = 126
+                    self.state = 135
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
-                self.state = 127
-                self.match(grammarYaplParser.IN)
-                self.state = 128
-                self.expr(19)
-                pass
-
-            elif la_ == 6:
-                localctx = grammarYaplParser.NewContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 129
-                self.match(grammarYaplParser.NEW)
-                self.state = 130
-                self.match(grammarYaplParser.TYPE_ID)
-                pass
-
-            elif la_ == 7:
-                localctx = grammarYaplParser.NegContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 131
-                self.match(grammarYaplParser.NEG)
-                self.state = 132
-                self.expr(17)
-                pass
-
-            elif la_ == 8:
-                localctx = grammarYaplParser.IsvoidContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 133
-                self.match(grammarYaplParser.ISVOID)
-                self.state = 134
-                self.expr(16)
-                pass
-
-            elif la_ == 9:
-                localctx = grammarYaplParser.MinusContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 135
-                self.match(grammarYaplParser.MINUS)
                 self.state = 136
-                self.expr(13)
+                self.match(grammarYaplParser.IN)
+                self.state = 137
+                self.expr(10)
                 pass
 
             elif la_ == 10:
-                localctx = grammarYaplParser.NotContext(self, localctx)
+                localctx = grammarYaplParser.NewContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 137
-                self.match(grammarYaplParser.NOT)
                 self.state = 138
-                self.expr(9)
+                self.match(grammarYaplParser.NEW)
+                self.state = 139
+                self.match(grammarYaplParser.TYPE_ID)
                 pass
 
             elif la_ == 11:
-                localctx = grammarYaplParser.AssignContext(self, localctx)
+                localctx = grammarYaplParser.MinusContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 139
-                _la = self._input.LA(1)
-                if not(_la==18 or _la==19):
-                    self._errHandler.recoverInline(self)
-                else:
-                    self._errHandler.reportMatch(self)
-                    self.consume()
                 self.state = 140
-                self.match(grammarYaplParser.ASSIGN)
+                self.match(grammarYaplParser.MINUS)
                 self.state = 141
                 self.expr(8)
                 pass
@@ -1628,43 +1593,43 @@ class grammarYaplParser ( Parser ):
                 pass
 
             elif la_ == 13:
-                localctx = grammarYaplParser.Object_idContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 146
-                self.match(grammarYaplParser.OBJECT_ID)
-                pass
-
-            elif la_ == 14:
-                localctx = grammarYaplParser.IntegerContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 147
-                self.match(grammarYaplParser.INTEGER)
-                pass
-
-            elif la_ == 15:
-                localctx = grammarYaplParser.StringContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 148
-                self.match(grammarYaplParser.STRING)
-                pass
-
-            elif la_ == 16:
-                localctx = grammarYaplParser.BoolContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 149
-                self.match(grammarYaplParser.BOOL)
-                pass
-
-            elif la_ == 17:
                 localctx = grammarYaplParser.Type_idContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 150
+                self.state = 146
                 self.match(grammarYaplParser.TYPE_ID)
+                pass
+
+            elif la_ == 14:
+                localctx = grammarYaplParser.Object_idContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 147
+                self.match(grammarYaplParser.OBJECT_ID)
+                pass
+
+            elif la_ == 15:
+                localctx = grammarYaplParser.IntegerContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 148
+                self.match(grammarYaplParser.INTEGER)
+                pass
+
+            elif la_ == 16:
+                localctx = grammarYaplParser.StringContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 149
+                self.match(grammarYaplParser.STRING)
+                pass
+
+            elif la_ == 17:
+                localctx = grammarYaplParser.BoolContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 150
+                self.match(grammarYaplParser.BOOL)
                 pass
 
             elif la_ == 18:
@@ -1692,9 +1657,9 @@ class grammarYaplParser ( Parser ):
                         localctx = grammarYaplParser.MulDivContext(self, grammarYaplParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 154
-                        if not self.precpred(self._ctx, 15):
+                        if not self.precpred(self._ctx, 21):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 15)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 21)")
                         self.state = 155
                         _la = self._input.LA(1)
                         if not(_la==39 or _la==40):
@@ -1703,16 +1668,16 @@ class grammarYaplParser ( Parser ):
                             self._errHandler.reportMatch(self)
                             self.consume()
                         self.state = 156
-                        self.expr(16)
+                        self.expr(22)
                         pass
 
                     elif la_ == 2:
                         localctx = grammarYaplParser.AddSubContext(self, grammarYaplParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 157
-                        if not self.precpred(self._ctx, 14):
+                        if not self.precpred(self._ctx, 20):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 14)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 20)")
                         self.state = 158
                         _la = self._input.LA(1)
                         if not(_la==41 or _la==42):
@@ -1721,16 +1686,16 @@ class grammarYaplParser ( Parser ):
                             self._errHandler.reportMatch(self)
                             self.consume()
                         self.state = 159
-                        self.expr(15)
+                        self.expr(21)
                         pass
 
                     elif la_ == 3:
                         localctx = grammarYaplParser.ComparisonContext(self, grammarYaplParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 160
-                        if not self.precpred(self._ctx, 12):
+                        if not self.precpred(self._ctx, 19):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 12)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 19)")
                         self.state = 161
                         _la = self._input.LA(1)
                         if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 61572651155456) != 0)):
@@ -1739,33 +1704,33 @@ class grammarYaplParser ( Parser ):
                             self._errHandler.reportMatch(self)
                             self.consume()
                         self.state = 162
-                        self.expr(13)
+                        self.expr(20)
                         pass
 
                     elif la_ == 4:
                         localctx = grammarYaplParser.AndContext(self, grammarYaplParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 163
-                        if not self.precpred(self._ctx, 11):
+                        if not self.precpred(self._ctx, 18):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 11)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 18)")
                         self.state = 164
                         self.match(grammarYaplParser.T__0)
                         self.state = 165
-                        self.expr(12)
+                        self.expr(19)
                         pass
 
                     elif la_ == 5:
                         localctx = grammarYaplParser.OrContext(self, grammarYaplParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 166
-                        if not self.precpred(self._ctx, 10):
+                        if not self.precpred(self._ctx, 17):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 10)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 17)")
                         self.state = 167
                         self.match(grammarYaplParser.T__1)
                         self.state = 168
-                        self.expr(11)
+                        self.expr(18)
                         pass
 
                     elif la_ == 6:
@@ -1788,12 +1753,7 @@ class grammarYaplParser ( Parser ):
                         self.state = 174
                         self.match(grammarYaplParser.DOT)
                         self.state = 175
-                        _la = self._input.LA(1)
-                        if not(_la==18 or _la==19):
-                            self._errHandler.recoverInline(self)
-                        else:
-                            self._errHandler.reportMatch(self)
-                            self.consume()
+                        self.match(grammarYaplParser.OBJECT_ID)
                         self.state = 176
                         self.match(grammarYaplParser.LPAREN)
                         self.state = 185
@@ -1847,23 +1807,23 @@ class grammarYaplParser ( Parser ):
 
     def expr_sempred(self, localctx:ExprContext, predIndex:int):
             if predIndex == 0:
-                return self.precpred(self._ctx, 15)
+                return self.precpred(self._ctx, 21)
          
 
             if predIndex == 1:
-                return self.precpred(self._ctx, 14)
+                return self.precpred(self._ctx, 20)
          
 
             if predIndex == 2:
-                return self.precpred(self._ctx, 12)
+                return self.precpred(self._ctx, 19)
          
 
             if predIndex == 3:
-                return self.precpred(self._ctx, 11)
+                return self.precpred(self._ctx, 18)
          
 
             if predIndex == 4:
-                return self.precpred(self._ctx, 10)
+                return self.precpred(self._ctx, 17)
          
 
             if predIndex == 5:
