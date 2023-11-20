@@ -3,6 +3,7 @@ from antlr4 import *
 from symbol_table import symbol_table, symbol
 from antlr_build.grammarYaplVisitor import grammarYaplVisitor
 from antlr_build.grammarYaplParser import grammarYaplParser
+from prettytable import PrettyTable
 
 class visitor_yapl(grammarYaplVisitor):
 
@@ -26,10 +27,11 @@ class visitor_yapl(grammarYaplVisitor):
         for value in self.defaultMethods:
             for method in self.defaultMethods[value]:
                 newSymbol = symbol(method, self.defaultMethods[value][method][1], ctx.start.line, value)
+                newSymbol.defineAsFunction = True
                 self.symbol_table.add(method, newSymbol, None, self.defaultMethods[value][method][0], None, None)
                 print("CLASS " + method)
 
-        reservados = ["Int", "String", "Bool", "IO", "Object"]
+        reservados = ["Int", "Bool", "String", "IO", "Object"]
         for value in reservados:
             newSymbol = symbol(value, "class", ctx.start.line, "global")
             self.symbol_table.add(value, newSymbol, None, None, None, None)
@@ -42,7 +44,7 @@ class visitor_yapl(grammarYaplVisitor):
                 line = i.start.line
 
                 newSymbol = symbol(currentSymbol, type, line, self.scope)
-                self.symbol_table.add(currentSymbol, newSymbol, None, None, self.getByte(type), None)
+                self.symbol_table.add(currentSymbol, newSymbol, None, None, -1, None)
                 print("Program child: " + currentSymbol)
                 tempScope = currentSymbol
 
@@ -57,7 +59,7 @@ class visitor_yapl(grammarYaplVisitor):
                             inputTypes.append(k.TYPE_ID().symbol.text)
 
                         newSymbol = symbol(currentSymbol, type, line, tempScope)
-                        self.symbol_table.add(currentSymbol, newSymbol, None, inputTypes, self.getByte(type), None)
+                        self.symbol_table.add(currentSymbol, newSymbol, None, inputTypes, -1, None)
                         print("Program class child: " + currentSymbol)
 
         for i in ctx.children:
@@ -70,106 +72,122 @@ class visitor_yapl(grammarYaplVisitor):
 
                     for j in upInScopre:
                         newSymbol = symbol(j.id, j.type, j.line, i.TYPE_ID(0).getText())
+                        newSymbol.defineAsFunction = j.defineAsFunction
                         params = self.symbol_table.getParams(j.id)
-                        self.symbol_table.add(j.id, newSymbol, None, params, self.getByte(j.type), None)
+                        self.symbol_table.add(j.id, newSymbol, None, params, -1, None)
                         print("Program inherits: " + j.id)
 
         # Add program to symbol table
         self.visitChildren(ctx)
     
     def get_symbol_table(self):
-        temp = []
+        new_symbol_table = symbol_table()
+
+        myTab = PrettyTable(["ID", "Type", "Line", "Scope", "Inherit", "Params", "Byte", "Offset"])
+        myTab.max_width['ID'] = 30
+
         for key, value in self.symbol_table.records.items():
-            addValue = {
-                'keyId': key,
-                'type': str(value.type) if value.type is not None else "Unknown",
-                'line': str(value.line) if value.line is not None else "Unknown",
-                'scope': str(value.scope) if value.scope is not None else "Unknown",
-                'inherit': str(value.inherit) if value.inherit is not None else "Unknown",
-                'params': str(value.params) if value.params is not None else "Unknown",
-                'byte': str(value.byte) if value.byte is not None else "Unknown",
-        'offset': str(value.offset) if value.offset is not None else "Unknown"
-            }
-            temp.append(addValue)
-        return temp
+            if value.byte != -1:
+                newSymbol = symbol(value.id, value.type, value.line, value.scope)
+                newSymbol.inherit = value.inherit
+                newSymbol.params = value.params
+                newSymbol.byte = value.byte
+                newSymbol.offset = value.offset
 
-    def fixable(self, tabla):
+                new_symbol_table.add(key, newSymbol, value.inherit, value.params, value.byte, value.offset)
 
-        for key in tabla:
-            if tabla[key].scope == "global":
-                tabla[key].byte = 0
+                myTab.add_row([
+                    value.id, 
+                    str(value.type) if value.type is not None else "Unknown",
+                    str(value.line) if value.line is not None else "Unknown",
+                    str(value.scope) if value.scope is not None else "Unknown",
+                    str(value.inherit) if value.inherit is not None else "Unknown",
+                    str(value.params) if value.params is not None else "Unknown",
+                    str(value.byte) if value.byte is not None else "Unknown",
+                    str(value.offset) if value.offset is not None else "Unknown"
+                ])
+
+        print(myTab.get_string(title="Symbol Table"))
+
+        # Return the new symbol table instead of temp
+        return new_symbol_table
+
+
+    def fixable(self):
+        for key in self.symbol_table.records:
+            if self.symbol_table.records[key].scope == "global":
+                print("byte: ", self.symbol_table.records[key].id)
+                self.symbol_table.records[key].byte = 0
+                self.defineFixable(self.symbol_table.records[key])
 
     def defineFixable(self, nameType):
         scopes = self.symbol_table.getAllInScope(nameType.id)
-        if nameType.type == "class":
-            sizeOrNone = self.getSizeOrNone(nameType)
-            if sizeOrNone != None:
-                nameType.byte = sizeOrNone
-                if len(temp) > 0:
-                    for temp in scopes:
-                        if temp.function:
-                            self.defineFixable(temp)
-                        else:
-                            temp.byte = self.defineSize(temp.type)
-                            nameType.byte += temp.byte
+        sizeOrNone = self.getSizeOrNone(nameType.id)
+        if nameType.type == "class" and sizeOrNone != None:
+            nameType.byte = sizeOrNone
+            if len(scopes) > 0:
+                for temp in scopes:
+                    if temp.defineAsFunction:
+                        self.defineFixable(temp)
+                    else:
+                        temp.byte = self.defineSize(temp.type)
+                        nameType.byte += temp.byte
         else:
             if len(scopes) == 0:
-                if nameType != "class":
+                if nameType.type != "class":
                     nameType.byte = self.defineSize(nameType.type)
                 else:
                     nameType.byte = 0
             else:
                 for temp in scopes:
-                    if nameType.function:
-                        self.defineFixable(nameType)
+                    if temp.defineAsFunction:
+                        self.defineFixable(temp)
                     else:
-                        nameType.byte = self.defineSize(temp.type)
-                        symbol.byte += temp.byte
+                        temp.byte = self.defineSize(temp.type)
+                        nameType.byte += temp.byte
 
                 
     def defineSize(self, temp):
-
         sizeOrNone = self.getSizeOrNone(temp)
-
         if sizeOrNone != None:
             return sizeOrNone
-        elif "global." + temp in self.symbol_table:
-            if self.symbol_table["gobal." + temp].byte != -1:
-                return self.symbol_table["global." + temp].byte
+        elif "global." + temp in self.symbol_table.records:
+            if self.symbol_table.records["global." + temp].byte != -1:
+                return self.symbol_table.records["global." + temp].byte
             else:
-                self.symbol_table["global." + temp].byte = 0
-                self.defineFixable(self.symbol_table["global." + temp])
-                return self.symbol_table["global." + temp].byte
+                self.symbol_table.records["global." + temp].byte = 0
+                self.defineFixable(self.symbol_table.records["global." + temp])
+                return self.symbol_table.records["global." + temp].byte
         else:
             return 8
     
     def getSizeOrNone(self, nameType):
-        if nameType.type == "Int":
+        if nameType == "Int":
             return 4
-        elif nameType.type == "String":
+        elif nameType == "String":
             return 128
-        elif nameType.type == "Bool":
+        elif nameType == "Bool":
             return 1
-        elif nameType.type == "SELF_TYPE":
+        elif nameType == "SELF_TYPE":
             return 8
-        elif nameType.type == "Object":
+        elif nameType == "Object":
             return 8
-        elif nameType.type == "IO":
+        elif nameType == "IO":
             return 14
         else:
             return None
 
-    def getByte(self, type):
-        if type == "Int":
-            return 8
-        elif type == "String":
-            return 1
-        elif type == "Bool":
-            return 1
-        elif type == "SELF_TYPE" or type == "class":
-            return 8
-        else:
-            return 8
+    # def getByte(self, type):
+    #     if type == "Int":
+    #         return 8
+    #     elif type == "String":
+    #         return 1
+    #     elif type == "Bool":
+    #         return 1
+    #     elif type == "SELF_TYPE" or type == "class":
+    #         return 8
+    #     else:
+    #         return 8
 
     def visitClass_def(self, ctx:grammarYaplParser.Class_defContext):
         print("_____Class_____")
@@ -205,6 +223,7 @@ class visitor_yapl(grammarYaplVisitor):
                 for method in parentMethods:
                     print("Class " + self.scope + " inherits method " + method.id)
                     newSymbol = symbol(method.id, method.type, method.line, self.scope)
+                    newSymbol.defineAsFunction = method.defineAsFunction
                     self.symbol_table.add(method.id, newSymbol, None, method.params, method.byte, None)
                     print("Class " + method.id)
 
@@ -232,8 +251,9 @@ class visitor_yapl(grammarYaplVisitor):
 
         # Add the method to the symbol table
         newSymbol = symbol(currentSymbol, data_type, line, self.scope)
+        newSymbol.defineAsFunction = True
         # Adding number of parameters and their types as well
-        self.symbol_table.add(currentSymbol, newSymbol, None, types, self.getByte(data_type), None)
+        self.symbol_table.add(currentSymbol, newSymbol, None, types, -1, None)
         print("Method: " + currentSymbol)
         self.scope = tempScope
         print("Method: " + currentSymbol)
@@ -251,7 +271,7 @@ class visitor_yapl(grammarYaplVisitor):
         line = ctx.TYPE_ID().symbol.line
 
         newSymbol = symbol(currentSymbol, type, line, self.scope)
-        self.symbol_table.add(currentSymbol, newSymbol, None, None, self.getByte(type), None)
+        self.symbol_table.add(currentSymbol, newSymbol, None, None, -1, None)
         print("Attribute: " + currentSymbol)
 
         # Visit children after validating attribute
@@ -262,7 +282,7 @@ class visitor_yapl(grammarYaplVisitor):
         name = ctx.OBJECT_ID().getText()
         data_type = ctx.TYPE_ID().getText()
         newSymbol = symbol(name, data_type, ctx.start.line, self.scope)
-        self.symbol_table.add(name, newSymbol, None, None, self.getByte(data_type), None)
+        self.symbol_table.add(name, newSymbol, None, None, -1, None)
         print("Formal: " + name)
         self.visitChildren(ctx)
     
@@ -295,14 +315,14 @@ class visitor_yapl(grammarYaplVisitor):
             if hasattr(ctx, "ADD"):  # Adjust this check based on your actual implementation
                 print("Add: Same type")
                 newSymbol = symbol(symbolGet, "Int", ctx.start.line, self.scope)
-                self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte("Int"), None)
+                self.symbol_table.add(symbolGet, newSymbol, None, None, -1, None)
                 print("Add ", symbolGet)
             else:
                 print("Substract: Same type")
                 print(symbolGet)
                 print(ctx.start.line)
                 newSymbol = symbol(symbolGet, "Int", ctx.start.line, self.scope)
-                self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte("Int"), None)
+                self.symbol_table.add(symbolGet, newSymbol, None, None, -1, None)
                 print("Substract ", symbolGet)
         else:
             if hasattr(ctx, "ADD"):  # Adjust this check based on your actual implementation
@@ -337,11 +357,11 @@ class visitor_yapl(grammarYaplVisitor):
             for inheritedSymbol in inherited:
                 print("New: Inherited symbol " + inheritedSymbol.id)
                 newSymbol = symbol(inheritedSymbol.id, inheritedSymbol.type, ctx.start.line, self.scope)
-                self.symbol_table.add(inheritedSymbol.id, newSymbol, None, None, self.getByte(inheritedSymbol.type), None)
+                self.symbol_table.add(inheritedSymbol.id, newSymbol, None, None, -1, None)
 
             print("New: Symbol found " + symbolType)
             newSymbol = symbol(symbolGet, symbolType, ctx.start.line, self.scope)
-            self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte(symbolType), None)
+            self.symbol_table.add(symbolGet, newSymbol, None, None, -1, None)
             print("New ", symbolGet)
         else:
             print("New: Symbol not found " + symbolType)
@@ -398,7 +418,7 @@ class visitor_yapl(grammarYaplVisitor):
                 if same:
                     print("Dispatch: Symbol found " + symbolGet + " with valid input types")
                     newSymbol = symbol(completeExpr, symbolType, ctx.start.line, self.scope)
-                    self.symbol_table.add(completeExpr, newSymbol, None, None, self.getByte(symbolType), None)
+                    self.symbol_table.add(completeExpr, newSymbol, None, None, -1, None)
                     print("Dispatch ", completeExpr)
                 else:
                     print("Dispatch: Symbol not found " + symbolGet)
@@ -412,7 +432,7 @@ class visitor_yapl(grammarYaplVisitor):
         type = "String"
         print("String ", name)
         newSymbol = symbol(name, type, ctx.start.line, self.scope)
-        self.symbol_table.add(ctx.STRING().getText(), newSymbol, None, None, self.getByte("String"), None)
+        self.symbol_table.add(ctx.STRING().getText(), newSymbol, None, None, -1, None)
         print("String ", name)
         self.visitChildren(ctx)
     
@@ -422,7 +442,7 @@ class visitor_yapl(grammarYaplVisitor):
         type = "Bool"
         print("Bool ", name)
         newSymbol = symbol(name, type, ctx.start.line, self.scope)
-        self.symbol_table.add(ctx.TYPE_ID(0), newSymbol, None, None, self.getByte("Bool"), None)
+        self.symbol_table.add(ctx.TYPE_ID(0), newSymbol, None, None, -1, None)
         print("Bool ", name)
         self.visitChildren(ctx)
         
@@ -463,7 +483,7 @@ class visitor_yapl(grammarYaplVisitor):
         if same == True:
             print(f"{operation}: Same type")
             newSymbol = symbol(symbolGet, "Int", ctx.start.line, self.scope)
-            self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte("Int"), None)
+            self.symbol_table.add(symbolGet, newSymbol, None, None, -1, None)
             print(f"{operation} ", symbolGet)
         else:
             self.symbol_table.addError(f"{operation} operation with different or invalid types")
@@ -489,7 +509,7 @@ class visitor_yapl(grammarYaplVisitor):
             print("Isvoid: Symbol found " + expr)
             symbolType = self.symbol_table.getSymbol(expr, self.scope).type
             newSymbol = symbol(symbolGet, symbolType, ctx.start.line, self.scope)
-            self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte("Bool"), None)
+            self.symbol_table.add(symbolGet, newSymbol, None, None, -1, None)
             print("Isvoid ", symbolGet)
         else:
             print("Isvoid: Symbol not found " + expr)
@@ -498,7 +518,7 @@ class visitor_yapl(grammarYaplVisitor):
         print("_____Integer_____")
         name = ctx.getText()
         newSymbol = symbol(ctx.getText(), "Int", ctx.start.line, self.scope)
-        self.symbol_table.add(name, newSymbol, None, None, self.getByte("Int"), None)
+        self.symbol_table.add(name, newSymbol, None, None, -1, None)
         print("Integer ", name)
         self.visitChildren(ctx)
     
@@ -537,7 +557,7 @@ class visitor_yapl(grammarYaplVisitor):
                 print("Static Dispatch: Symbol found " + symbolGet + " with valid input types")
                 symbolType = callingMethod.type
                 newSymbol = symbol(symbolGet, symbolType, ctx.start.line, self.scope)
-                self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte(symbolType), None)
+                self.symbol_table.add(symbolGet, newSymbol, None, None, -1, None)
                 print("Static Dispatch ", symbolGet)
             else:
                 print("Static Dispatch: Symbol not found " + symbolGet)
@@ -567,7 +587,7 @@ class visitor_yapl(grammarYaplVisitor):
 
             symbolType = self.symbol_table.getSymbol(expr, self.scope).type
             newSymbol = symbol(symbolGet, symbolType, ctx.start.line, self.scope)
-            self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte(symbolType), None)
+            self.symbol_table.add(symbolGet, newSymbol, None, None, -1, None)
             print("While ", symbolGet)
         else:
             print("While: Symbol not found " + expr)
@@ -600,7 +620,7 @@ class visitor_yapl(grammarYaplVisitor):
         if same:
             print("Compare: Same type")
             newSymbol = symbol(symbolGet, "Bool", ctx.start.line, self.scope)
-            self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte("Bool"), None)
+            self.symbol_table.add(symbolGet, newSymbol, None, None, -1, None)
             print("Compare ", symbolGet)
         else:
             self.symbol_table.addError("Compare operation with different or invalid types")
@@ -612,10 +632,12 @@ class visitor_yapl(grammarYaplVisitor):
         type = self.symbol_table.getSymbol(ctx.expr().getText(), self.scope)
 
         if type != None:
+            isFuncType = type.defineAsFunction
             type = type.type
             print("Parenthesis: Symbol found " + ctx.expr().getText())
             newSymbol = symbol(name, type, ctx.start.line, self.scope)
-            self.symbol_table.add(name, newSymbol, None, None, self.getByte(type), None)
+            newSymbol.defineAsFunction = isFuncType
+            self.symbol_table.add(name, newSymbol, None, None, -1, None)
             print("Parenthesis ", name)
         else:
             print("Parenthesis: Symbol not found " + name)
@@ -629,7 +651,7 @@ class visitor_yapl(grammarYaplVisitor):
             name = ctx.OBJECT_ID().getText()
             print("Bool ", name)
             newSymbol = symbol(name, type, ctx.start.line, self.scope)
-            self.symbol_table.add(name, newSymbol, None, None, self.getByte(type), None)
+            self.symbol_table.add(name, newSymbol, None, None, -1, None)
 
     
     def visitNeg(self, ctx:grammarYaplParser.NegContext):
@@ -654,7 +676,7 @@ class visitor_yapl(grammarYaplVisitor):
             print("Neg: Symbol found " + expr)
             symbolType = self.symbol_table.getSymbol(expr, self.scope).type
             newSymbol = symbol(symbolGet, symbolType, ctx.start.line, self.scope)
-            self.symbol_table.add(symbolGet, newSymbol, None, None, self.getByte(symbolType), None)
+            self.symbol_table.add(symbolGet, newSymbol, None, None, -1, None)
             print("Neg ", symbolGet)
         else:
             print("Neg: Symbol not found " + expr)
@@ -687,7 +709,7 @@ class visitor_yapl(grammarYaplVisitor):
             print("Not: Symbol found " + expr)
             symbolType = found_symbol.type
             newSymbol = symbol(symbol_text, symbolType, ctx.start.line, self.scope)
-            self.symbol_table.add(symbol_text, newSymbol, None, None, self.getByte(symbolType), None)
+            self.symbol_table.add(symbol_text, newSymbol, None, None, -1, None)
             print("Not ", symbol_text)
         else:
             print("Not: Symbol not found " + expr)
@@ -698,7 +720,7 @@ class visitor_yapl(grammarYaplVisitor):
         type = "SELF_TYPE"
         print("Self ", name)
         newSymbol = symbol(name, type, ctx.start.line, self.scope)
-        self.symbol_table.add(name, newSymbol, None, None, self.getByte(type), None)
+        self.symbol_table.add(name, newSymbol, None, None, -1, None)
         print("Self ", name)
         self.visitChildren(ctx)
     
@@ -712,7 +734,7 @@ class visitor_yapl(grammarYaplVisitor):
         name = ctx.getText()
         newSymbol = symbol(name, "LET", ctx.start.line, self.scope)
         print("Let ", ctx.getText())
-        self.symbol_table.add(name, newSymbol, None, None, self.getByte("Let"), None)
+        self.symbol_table.add(name, newSymbol, None, None, -1, None)
         
         scopeLegacy = self.scope
         tempScope = self.scope + "." + "LET"
@@ -722,7 +744,7 @@ class visitor_yapl(grammarYaplVisitor):
             name = ctx.OBJECT_ID(i).getText()
             data_type = ctx.TYPE_ID(i).getText()
             newSymbol = symbol(name, data_type, ctx.start.line, self.scope)
-            self.symbol_table.add(name, newSymbol, None, None, self.getByte(data_type), None)
+            self.symbol_table.add(name, newSymbol, None, None, -1, None)
             print("Let ", name, "type", data_type)
         self.visitChildren(ctx)
 
@@ -757,7 +779,7 @@ class visitor_yapl(grammarYaplVisitor):
             print("If: Symbol found " + expr)
             symbolType = found_symbol.type
             newSymbol = symbol(symbol_text, symbolType, ctx.start.line, self.scope)
-            self.symbol_table.add(symbol_text, newSymbol, None, None, self.getByte(symbolType), None)
+            self.symbol_table.add(symbol_text, newSymbol, None, None, -1, None)
             print("If ", symbol_text)
         else:
             print("If: Symbol not found " + expr)

@@ -142,6 +142,6 @@ class symbol():
         self.scope = scope
         self.inherit = None
         self.params = []
-        self.byte = 0
+        self.byte = -1
         self.offset = 0
-        self.function = False
+        self.defineAsFunction = False

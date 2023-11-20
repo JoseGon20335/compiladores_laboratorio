@@ -50,27 +50,17 @@ class reader():
         visitorInstance = visitor_yapl()
         # Este visit llamado es el que pertenece a la calse Tree, el cual llama al método accfept que pertenece al parser (aclaración por ambigüedad)
         visitorInstance.visit(tree)
+        visitorInstance.fixable()
         retornable = visitorInstance.get_symbol_table()
-        #visitorInstance.diagnosis(tree)
 
-        print(retornable)
+        print("BOTTOMUP VALIDATOR_________________________________________________________")
 
-        myTab = PrettyTable(["ID", "Type", "Line", "Scope", "Inherit", "Params", "Byte", "Offset"])
-        # Add rows
-        for i in retornable:
-            # Splitting the 'keyId' on the dot and taking the last part
-            symbol_name = i['keyId'].split('.')[-1]
-            myTab.add_row([symbol_name, i['type'], i['line'], i['scope'], i['inherit'], i['params'], i['byte'], i['offset']])
-
-        print(myTab)
-        # print("BOTTOMUP VALIDATOR_________________________________________________________")
-
-        # validator = bottomUpValidator(visitorInstance.symbol_table)
+        # validator = bottomUpValidator(retornable)
         # validator.visitDeep(tree)
 
         print("CODIGO INTERMEIDO_________________________________________________________")
 
-        visitorInstance2 = codigo_intermedio("codigo_intermedio", visitorInstance.symbol_table, grammarYaplLexer.symbolicNames)
+        visitorInstance2 = codigo_intermedio("codigo_intermedio", retornable, grammarYaplLexer.symbolicNames)
         visitorInstance2.visit(tree)
         codigoIntermedio = visitorInstance2.write_to_file()
 
