@@ -140,8 +140,9 @@ class symbol():
         self.type = type
         self.line = line
         self.scope = scope
-        self.inherit = None
+        self.inherit = []
         self.params = []
         self.byte = -1
         self.offset = 0
         self.defineAsFunction = False
+        self.returnType = None

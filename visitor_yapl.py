@@ -16,6 +16,8 @@ class visitor_yapl(grammarYaplVisitor):
             "String": {"length": [[], "Int"], "concat": [["String"], "String"], "substr": [["Int", "Int"], "String"]}
         }
 
+    def define_symbol_table(self, symbol_table):
+        self.symbol_table = symbol_table
 
     def diagnosis(self, ctx:grammarYaplParser.ProgramContext):
         print(type(ctx))
@@ -79,23 +81,13 @@ class visitor_yapl(grammarYaplVisitor):
 
         # Add program to symbol table
         self.visitChildren(ctx)
-    
-    def get_symbol_table(self):
-        new_symbol_table = symbol_table()
 
+    def print_symbol_table(self):
         myTab = PrettyTable(["ID", "Type", "Line", "Scope", "Inherit", "Params", "Byte", "Offset"])
         myTab.max_width['ID'] = 30
 
         for key, value in self.symbol_table.records.items():
             if value.byte != -1:
-                newSymbol = symbol(value.id, value.type, value.line, value.scope)
-                newSymbol.inherit = value.inherit
-                newSymbol.params = value.params
-                newSymbol.byte = value.byte
-                newSymbol.offset = value.offset
-
-                new_symbol_table.add(key, newSymbol, value.inherit, value.params, value.byte, value.offset)
-
                 myTab.add_row([
                     value.id, 
                     str(value.type) if value.type is not None else "Unknown",
@@ -108,10 +100,39 @@ class visitor_yapl(grammarYaplVisitor):
                 ])
 
         print(myTab.get_string(title="Symbol Table"))
+    
+    def get_symbol_table(self):
+        new_symbol_table = symbol_table()
+
+        for key, value in self.symbol_table.records.items():
+            if value.byte != -1:
+                newSymbol = symbol(value.id, value.type, value.line, value.scope)
+                newSymbol.inherit = value.inherit
+                newSymbol.params = value.params
+                newSymbol.byte = value.byte
+                newSymbol.offset = value.offset
+
+                new_symbol_table.add(value.id, newSymbol, value.inherit, value.params, value.byte, value.offset)
 
         # Return the new symbol table instead of temp
         return new_symbol_table
 
+    def addOffset(self):
+        scopes = []
+        for key in self.symbol_table.records:
+            if self.symbol_table.records[key].scope not in scopes and "." not in self.symbol_table.records[key].scope:
+                scopes.append(self.symbol_table.records[key].scope)
+
+        for temp in scopes:
+            offsetTemp = 0
+            allScopes = self.symbol_table.getAllInScope(temp)
+
+            for temp2 in allScopes:
+                if temp2.defineAsFunction:
+                    temp2.offset = 0
+                else:
+                    temp2.offset = offsetTemp
+                    offsetTemp += temp2.byte
 
     def fixable(self):
         for key in self.symbol_table.records:
@@ -197,6 +218,8 @@ class visitor_yapl(grammarYaplVisitor):
         if self.symbol_table.classExists(self.scope):
             self.symbol_table.addError("Class " + self.scope + " already exists")
 
+        inheritsFrom = []
+
         # Check if class inherits from a valid class
         if ctx.INHERITS():
             parent_name = str(ctx.TYPE_ID(1).getText())
@@ -212,12 +235,12 @@ class visitor_yapl(grammarYaplVisitor):
 
             parentClass = self.symbol_table.getSymbol(parent_name, self.scope)
             if parentClass is not None:
-                # inheritsFrom = [parentClass.id]
-                # tempParent = parentClass
+                inheritsFrom = [parentClass.id]
 
-                # while tempParent.inheritsFrom:
-                #     inheritsFrom.append(tempParent.inheritsFrom[0])
-                #     tempParent = self.symbol_table.getSymbol(tempParent.inheritsFrom[0], self.scope)
+                tempParent = parentClass
+                while tempParent.inherit != []:
+                    inheritsFrom.append(tempParent.inherit[0])
+                    tempParent = self.symbol_table.getSymbol(tempParent.inherit[0], self.scope)
 
                 parentMethods = self.symbol_table.getAllInScope(parent_name)
                 for method in parentMethods:
@@ -228,7 +251,7 @@ class visitor_yapl(grammarYaplVisitor):
                     print("Class " + method.id)
 
         newSymbol = symbol(ctx.TYPE_ID(0).getText(), ctx.CLASS().getText(), ctx.start.line, "global")
-        self.symbol_table.add(ctx.TYPE_ID(0).getText(), newSymbol, None, None, None, None)
+        self.symbol_table.add(ctx.TYPE_ID(0).getText(), newSymbol, inheritsFrom, None, None, None)
         print("Class " + ctx.TYPE_ID(0).getText())
 
         # Visit children after validating class
@@ -249,10 +272,8 @@ class visitor_yapl(grammarYaplVisitor):
                 params.append(str(formal_ctx.OBJECT_ID().getText()))
                 types.append(str(formal_ctx.TYPE_ID().getText()))
 
-        # Add the method to the symbol table
         newSymbol = symbol(currentSymbol, data_type, line, self.scope)
         newSymbol.defineAsFunction = True
-        # Adding number of parameters and their types as well
         self.symbol_table.add(currentSymbol, newSymbol, None, types, -1, None)
         print("Method: " + currentSymbol)
         self.scope = tempScope
@@ -807,18 +828,6 @@ class visitor_yapl(grammarYaplVisitor):
             print(type)
             print(self.scope)
             typeInstance = self.symbol_table.getSymbol(type, self.scope)
-
-            # REVISAR!!!!!!!!!!!
-            # Check if there's any inheritance relationship that can be used for casting
-            # if type != None:
-            #     print(symbolTypeInstance)
-            #     print(symbolTypeInstance.inherit)
-            #     if (type in symbolTypeInstance.inherit) or (symbolType in typeInstance.inherit):
-            #         print("Assign: Implicit casting with inheritance")
-            #     else:
-            #         # Add error to the symbol table
-            #         error_msg = f"Invalid type for {currentSymbol}: {symbolType} trying to assign {type}"
-            #         self.symbol_table.addError(error_msg)
 
     def visitAnd(self, ctx:grammarYaplParser.AndContext):
         print("_____And_____")

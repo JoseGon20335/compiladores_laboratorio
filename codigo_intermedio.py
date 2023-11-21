@@ -26,22 +26,25 @@ class codigo_intermedio(grammarYaplVisitor):
         class_name = ctx.TYPE_ID(0).getText()
         inherits_from = None
 
-        for key, table_class in self.symbol_tables:
-            if not isinstance(table_class, symbol_table):
-                continue  
-            class_record = table_class.lookup(class_name)
-            if class_record is not None:
-                inherits_from = class_record['parent']
-                break
+        size = 0
 
-        if inherits_from is not None:
+        for table_class in self.symbol_tables.records:
+            classTemp = self.symbol_tables.records[table_class]
+            if classTemp.id == class_name:
+                inherits_from = classTemp.inherit
+                size = classTemp.byte
+
+        if len(inherits_from) > 0:
             self.emit(f"CLASS {class_name} INHERITS {inherits_from}")
 
         else:
-            self.emit(f"CLASS {class_name}")
+            self.emit(f"CLASS {class_name} SIZE {size}")
 
         for feature_ctx in ctx.feature():
-            self.visitFeature(feature_ctx)
+            if isinstance(feature_ctx, grammarYaplParser.MethodContext):
+                self.visitMethod(feature_ctx)
+            elif isinstance(feature_ctx, grammarYaplParser.AttributeContext):
+                self.visitAttribute(feature_ctx)
 
         self.emit(f"END CLASS {class_name}\n")
 
@@ -49,7 +52,7 @@ class codigo_intermedio(grammarYaplVisitor):
         if class_name == "Main":
             self.emit(f"CALL Main.main")
 
-    def visitFeature(self, ctx:grammarYaplParser.FeatureContext):
+    def visitMethod(self, ctx:grammarYaplParser.MethodContext):
 
         if ctx.RBRACE() and ctx.LBRACE():
             self.last_node_visited = ctx
@@ -62,37 +65,61 @@ class codigo_intermedio(grammarYaplVisitor):
             if ctx.formal():
                 for formal_ctx in ctx.formal():
                     parametros.append(self.visitFormal(formal_ctx))
+
+            classTemp = None
+            foundTemp = False
+            functionTemp = None
+
+            for table_class in self.symbol_tables.records:
+                if not foundTemp:
+                    classFor = self.symbol_tables.records[table_class]
+                    if classFor.id == function_class:
+                        classTemp = classFor
+                        foundTemp = True
+
+                if foundTemp:
+                    classFor = self.symbol_tables.records[table_class]
+                    if classFor.id == function_name:
+                        functionTemp = classFor
+                        break
                     
-            self.emit(f"\nFUNCTION {function_class}.{function_name}")
+            trueSize = functionTemp.byte
+
+            self.emit(f"\nFUNCTION {function_class}.{function_name} SIZE {trueSize}")
         
+            paramsNum = 0
+            if functionTemp.params != []:
+                for function in functionTemp.params:
+                    self.emit(f"\tsp[{functionTemp.offset}] = {function}.PARAM_{paramsNum}")
+                    paramsNum += 1
             
             if ctx.expr():
                 result = self.visitExpr(ctx.expr())
 
             self.emit(f"\tRETURN {result}")
             self.emit(f"END FUNCTION {function_class}.{function_name}")
+                    
+    def visitAttribute(self, ctx:grammarYaplParser.AttributeContext):
+        if ctx.ASSIGN():
+            variable_name = ctx.OBJECT_ID().getText()
+            var_value = self.visitExpr(ctx.expr())
 
-        else:
-            
-            if ctx.ASSIGN():
-                variable_name = ctx.OBJECT_ID().getText()
-                var_value = self.visitExpr(ctx.expr())
+            class_name = self.buscar_clase(ctx)
+            table_class = None
 
-                class_name = self.buscar_clase(ctx)
-                table_class = None
+            for table in self.symbol_tables.records:
+                classFor = self.symbol_tables.records[table]
+                if classFor.id == class_name:
+                    table_class = classFor
+                    break
 
-                for table_tuple in self.symbol_tables:
-                    table = table_tuple[1]  # Aquí obtienes el objeto symbol de la tupla
-                    table_class = self.symbol_tables.lookup(class_name)
-                    if table_class is not None:
-                        table_class = table
-                        break
-
-                if table_class is not None:
-                    if table_class.id == variable_name:
-                        offset = table_class.offset
+            if table_class is not None:
+                for table in self.symbol_tables.records:
+                    classFor = self.symbol_tables.records[table]
+                    if classFor.id == variable_name:
+                        offset = classFor.offset
                         self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
-                        return f"sp_GLOBAL[{offset}]"
+                        return
         
     def visitFormal(self, ctx:grammarYaplParser.FormalContext):
         self.last_node_visited = ctx
@@ -118,35 +145,29 @@ class codigo_intermedio(grammarYaplVisitor):
             self.emit(f"{temp} = {value}")
             return temp
 
-    def visitAddSub(self, ctx:grammarYaplParser.AddSubContext):
-        left_operand = self.visit(ctx.expr(0))
-        right_operand = self.visit(ctx.expr(1))
-        temp = self.new_temp()
+    # def visitAddSub(self, ctx:grammarYaplParser.AddSubContext):
+    #     left_operand = self.visit(ctx.expr())
+    #     right_operand = self.visit(ctx.expr(1))
+    #     temp = self.new_temp()
 
         
-        if ctx.PLUS():
-            self.emit(f"\t{temp} = {left_operand} + {right_operand}")
-        elif ctx.MINUS():
-            self.emit(f"\t{temp} = {left_operand} - {right_operand}")
+    #     if ctx.PLUS():
+    #         self.emit(f"\t{temp} = {left_operand} + {right_operand}")
+    #     elif ctx.MINUS():
+    #         self.emit(f"\t{temp} = {left_operand} - {right_operand}")
 
-        return temp
-
-    
-    def visitMinus(self, ctx:grammarYaplParser.MinusContext):
-        left_operand = self.visit(ctx.expr(0))
-        right_operand = self.visit(ctx.expr(1))
-        temp = self.new_temp()
-        self.emit(f"\t{temp} = {left_operand} - {right_operand}")
-        return temp
+    #     return temp
 
     def visitExpr(self, ctx:grammarYaplParser.ExprContext):
         self.last_node_visited = ctx
 
-        
         if isinstance(ctx, grammarYaplParser.DispatchContext) and ctx.DOT():
-            
-            base_expr = self.visit(ctx.expr(0))
-            
+            base_expr = self.visitExpr(ctx.expr(0))
+            if "new " in base_expr:
+                temp0 = self.new_temp()
+                self.emit(f"\t{temp0} = {base_expr}")
+                base_expr = temp0
+
             type_override = None
             if ctx.AT():
                 third_child = ctx.children[2]
@@ -154,31 +175,49 @@ class codigo_intermedio(grammarYaplVisitor):
                     type_override = third_child.getText()
             
             method_name = ctx.OBJECT_ID().getText()
-            
-            arguments = [self.visitExpr(e) for e in ctx.expr()[1:]] 
+
+            if method_name == "type_name":
+                type_element = self.nodes_types[ctx.expr()]
+
+                if "Int" in type_element or "String" in type_element or "Bool" in type_element:
+                    temp = self.new_temp()
+                    self.emit(f"\t{temp} = '{type_element}'")
+                    return temp
+
+            arguments = [self.visitExpr(e) for e in ctx.expr()[1:]]
             
             temp = self.new_temp()
             if type_override:
-                self.emit(f"\t{temp} = CALL {base_expr}[{type_override}].{method_name}({', '.join(arg for arg in arguments)})")
+                self.emit(f"\t{temp} = CALL {base_expr}@{type_override}.{method_name}({','.join(arg for arg in arguments)})")
             else:
-                self.emit(f"\t{temp} = CALL {base_expr}.{method_name}({', '.join(arg for arg in arguments)})")
+                self.emit(f"\t{temp} = CALL {base_expr}.{method_name}({','.join(arg for arg in arguments)})")
             
             return temp
-
         
         elif isinstance(ctx, grammarYaplParser.Static_dispatchContext) and ctx.OBJECT_ID() and ctx.LPAREN():
-            
             method_name = ctx.OBJECT_ID().getText()
-            
             
             arguments = [self.visitExpr(e) for e in ctx.expr()]
             
-            temp = self.new_temp()
-            self.emit(f"\t{temp} = CALL {method_name}({', '.join(str(arg) for arg in arguments)})")
-            return temp
+            class_name = self.buscar_clase(ctx)
 
-        elif isinstance(ctx, grammarYaplParser.IfContext):
-            condicion = ctx.expr(0)
+            if "new " in class_name:
+                temp = self.new_temp()
+                self.emit(f"\t{temp} = {class_name}")
+
+                temp2 = self.new_temp()
+                self.emit(f"\t{temp2} = CALL {temp}.{method_name}({', '.join(str(arg) for arg in arguments)})")
+        
+                return temp2
+            
+            else:
+                temp = self.new_temp()
+                self.emit(f"\t{temp} = CALL {class_name}.{method_name}({', '.join(str(arg) for arg in arguments)})")
+        
+                return temp
+
+        elif isinstance(ctx, grammarYaplParser.IfContext) and ctx.IF():
+            condicion = ctx.expr()
             rama_then = ctx.expr(1)
             rama_else = ctx.expr(2)
 
@@ -189,74 +228,52 @@ class codigo_intermedio(grammarYaplVisitor):
             label_continue = self.new_label()
 
             temp_return = self.new_temp()
-
-            
             self.emit(f"\tIF {condition_temp} GOTO {label_then}")
             self.emit(f"\tGOTO {label_else}")
-
-            
             self.emit(f"LABEL {label_then}")
+
             result_then = self.visitExpr(rama_then)
             self.emit(f"\t{temp_return} = {result_then}")
             self.emit(f"\tGOTO {label_continue}")
-
-            
             self.emit(f"LABEL {label_else}")
+
             result_else = self.visitExpr(rama_else)
             self.emit(f"\t{temp_return} = {result_else}")
-
-            
             self.emit(f"LABEL {label_continue} \n")
 
             return temp_return
-
         
-        elif isinstance(ctx, grammarYaplParser.WhileContext):
-            
+        elif isinstance(ctx, grammarYaplParser.WhileContext) and ctx.WHILE():
             label_start = self.new_label()
             label_loop = self.new_label()
             label_end = self.new_label()
-
-            
             self.emit(f"LABEL {label_start}")
-
-            
-            condition_temp = self.visitExpr(ctx.expr(0))
+            condition_temp = self.visitExpr(ctx.expr())
 
             if condition_temp is None:
                 a = 5
-
-            
             self.emit(f"\tIF NOT {condition_temp} GOTO {label_end}")
             self.emit(f"\tGOTO {label_loop}")
-
-            
             self.emit(f"LABEL {label_loop}")
             self.visitExpr(ctx.expr(1))
             self.emit(f"\tGOTO {label_start}")
-
-            
             self.emit(f"LABEL {label_end} \n")
 
             return "Object"
-
         
-        elif isinstance(ctx, grammarYaplParser.BlockContext):
+        elif isinstance(ctx, grammarYaplParser.BlockContext) and ctx.LBRACE():
             result = None
             for expr_ctx in ctx.expr():
                 result = self.visitExpr(expr_ctx)
             return result
 
-        
-        elif isinstance(ctx, grammarYaplParser.LetContext):
-            
+        elif isinstance(ctx, grammarYaplParser.LetContext) and ctx.LET():
             i = 0
 
             while True:
                 hijo_actual = ctx.children[i]
 
                 if hijo_actual.getText() == "IN" or hijo_actual.getText() == "in" or hijo_actual.getText() == "In" or hijo_actual.getText() == "iN":
-                    
                     result = self.visitExpr(ctx.expr()[-1])
                     return result
 
@@ -272,45 +289,36 @@ class codigo_intermedio(grammarYaplVisitor):
 
                             if hijo_actual_plus_3.getSymbol().type == self.symbolic_names.index("ASSIGN"):
                                 hijo_actual_plus_4 = ctx.children[i + 4]
-
-                                
                                 var_value = self.visitExpr(hijo_actual_plus_4)
 
                                 class_name = self.buscar_clase(ctx)
+                                function_name = self.buscar_funcion(ctx)
                                 table_class = None
-                                class_contador = 0
-                                found = False
+                                table_function = None
 
-                                for table in self.symbol_tables:
-                                    table_temp = table.lookup(class_name)
-                                    if table_temp is not None:
-                                        table_class = table
-                                        
-                                    if table_class is not None:
-                                        for key, value in table.items():
-                                            if key == variable_name:
-                                                offset = value['offset']
+                                for table in self.symbol_tables.records:
+                                    table_temp = self.symbol_tables.records[table]
+                                    if table_temp.id == class_name:
+                                        table_class = self.symbol_tables.records[table]
 
-                                                if class_contador == 0:
-                                                    self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
-                                                    found = True
-                                                    break
-                                                else:
-                                                    self.emit(f"\tsp[{offset}] = {var_value}")
-                                                    found = True
-                                                    break
-                                    
-                                        if found:
-                                            break    
-                                
-                                        class_contador += 1
+                                    table_temp = self.symbol_tables.records[table]
+                                    if table_temp.id == function_name:
+                                        table_function = self.symbol_tables.records[table]
+                                        break
+                                if table_class is not None:
+                                    if table_class.id == variable_name:
+                                        offset = table_class.offset
+                                        self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
+                                if table_function is not None:
+                                    if table_function.id == variable_name:
+                                        offset = table_function.offset
+                                        self.emit(f"\tsp[{offset}] = {var_value}")
 
                                 hijo_actual_plus_5 = ctx.children[i + 5]
                                 if hijo_actual_plus_5.getSymbol().type == self.symbolic_names.index("COMMA"):
                                     i += 6
                                 else:
                                     i += 5
-                            
                             else:
                                 if hijo_actual_plus_3.getSymbol().type == self.symbolic_names.index("COMMA"):
                                     i += 4
@@ -318,31 +326,29 @@ class codigo_intermedio(grammarYaplVisitor):
                                     i += 3
                 else:
                     i += 1
-            
         
-        elif isinstance(ctx, grammarYaplParser.NewContext):
+        elif isinstance(ctx, grammarYaplParser.NewContext) and ctx.NEW():
             temp = self.new_temp()
             clase = ctx.children[1].getText()
             self.emit(f"\t{temp} = new {clase}")
             return temp
 
         
-        elif isinstance(ctx, grammarYaplParser.NegContext):
-            operand = self.visitExpr(ctx.expr(0))
+        elif isinstance(ctx, grammarYaplParser.NegContext) and ctx.NEG():
+            operand = self.visitExpr(ctx.expr())
             temp = self.new_temp()
-            self.emit(f"\t{temp} = -{operand}")
+            self.emit(f"\t{temp} = NEG {operand}")
             return temp
-
         
-        elif isinstance(ctx, grammarYaplParser.IsvoidContext):
-            operand = self.visitExpr(ctx.expr(0))
+        elif isinstance(ctx, grammarYaplParser.IsvoidContext) and ctx.ISVOID():
+            operand = self.visitExpr(ctx.expr())
             temp = self.new_temp()
             self.emit(f"\t{temp} = isvoid {operand}")
             return temp
 
         
         elif isinstance(ctx, grammarYaplParser.MulDivContext):
-            left_operand = self.visitExpr(ctx.expr(0))
+            left_operand = self.visitExpr(ctx.expr())
             right_operand = self.visitExpr(ctx.expr(1))
             temp = self.new_temp()
             if ctx.MULT():  
@@ -352,7 +358,7 @@ class codigo_intermedio(grammarYaplVisitor):
             return temp
 
         elif isinstance(ctx, grammarYaplParser.AddSubContext):
-            left_operand = self.visitExpr(ctx.expr(0))
+            left_operand = self.visitExpr(ctx.expr())
             right_operand = self.visitExpr(ctx.expr(1))
             temp = self.new_temp()
             if ctx.PLUS():
@@ -368,86 +374,98 @@ class codigo_intermedio(grammarYaplVisitor):
             return temp
 
         elif isinstance(ctx, grammarYaplParser.ComparisonContext):
-            left_operand = self.visitExpr(ctx.expr(0))
+            left_operand = self.visitExpr(ctx.expr())
             right_operand = self.visitExpr(ctx.expr(1))
             temp = self.new_temp()
-            if ctx.LE():
+            if ctx.EQ():
+                left_operand = self.visitExpr(ctx.expr())
+                right_operand = self.visitExpr(ctx.expr(1))
+                temp = self.new_temp()
+                self.emit(f"\t{temp} = {left_operand} == {right_operand}")
+            elif ctx.LE():
                 self.emit(f"\t{temp} = {left_operand} <= {right_operand}")
-            else:  
+            elif ctx.LT():  
                 self.emit(f"\t{temp} = {left_operand} < {right_operand}")
             return temp
-            
-        elif isinstance(ctx, grammarYaplParser.EqContext):
-            left_operand = self.visitExpr(ctx.expr(0))
-            right_operand = self.visitExpr(ctx.expr(1))
-            temp = self.new_temp()
-            self.emit(f"\t{temp} = {left_operand} == {right_operand}")
-            return temp
                 
-        elif isinstance(ctx, grammarYaplParser.NotContext):
+        elif isinstance(ctx, grammarYaplParser.NotContext) and ctx.NOT():
             operand = self.visitExpr(ctx.expr())
             temp = self.new_temp()
             self.emit(f"\t{temp} = NOT {operand}")
             return temp
         
-        elif isinstance(ctx, grammarYaplParser.AssignContext):
+        elif isinstance(ctx, grammarYaplParser.AssignContext) and ctx.ASSIGN():
             variable_name = ctx.OBJECT_ID().getText()
             var_value = self.visit(ctx.expr())
 
             class_name = self.buscar_clase(ctx)
+            function_name = self.buscar_funcion(ctx)
             table_class = None
-            class_contador = 0
+            table_function = None
 
-            for table in self.symbol_tables:
-                table_temp = self.symbol_tables.lookup(class_name)
+            for table in self.symbol_tables.records:
+                table_temp = self.symbol_tables.records[table]
+                if table_temp.id == class_name:
+                    table_class = self.symbol_tables.records[table]
+
+                table_temp = self.symbol_tables.records[table]
+                if table_temp.id == function_name and table_class is not None:
+                    table_function = self.symbol_tables.records[table]
+                    break
                     
-                if table_temp is not False:
-                    if table_temp.id == variable_name:
-                        offset = table_class.offset
+            if table_class is not None:
+                if table_class.id == variable_name:
+                    offset = table_class.offset
+                    self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
+                    return f"sp_GLOBAL[{offset}]"
 
-                        if class_contador == 0:
-                            self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
-                            return f"sp_GLOBAL[{offset}]"
-                        else:
-                            self.emit(f"\tsp[{offset}] = {var_value}")
-                            return f"sp[{offset}]"
-                
-                    class_contador += 1
+            if table_function is not None:
+                if table_class.id == variable_name:
+                    offset = table_class.offset
+                    self.emit(f"\tsp[{offset}] = {var_value}")
+                    return f"sp[{offset}]"
         
-        elif isinstance(ctx, grammarYaplParser.ParenthesisContext):
+        elif isinstance(ctx, grammarYaplParser.ParenthesisContext) and ctx.LPAREN():
             return self.visit(ctx.expr())
 
-        elif isinstance(ctx, grammarYaplParser.Object_idContext):
+        elif isinstance(ctx, grammarYaplParser.Object_idContext) and ctx.OBJECT_ID():
             variable_name = ctx.OBJECT_ID().getText()
-            class_name = self.buscar_clase(ctx)
-            table_class = None
-            class_contador = 0
 
-            for entry in self.symbol_tables:
-                table = entry[1] # Extract the actual table from the tuple
-                if hasattr(table, 'keyId') and table.keyId == class_name:
-                    table_class = table
+            class_name = self.buscar_clase(ctx)
+            function_name = self.buscar_funcion(ctx)
+            table_class = None
+            table_function = None
+
+            for table in self.symbol_tables.records:
+                table_temp = self.symbol_tables.records[table]
+                if table_temp.id == class_name:
+                    table_class = self.symbol_tables.records[table]
+                table_temp = self.symbol_tables.records[table]
+                if table_temp.id == class_name and table_class is not None:
+                    table_function = self.symbol_tables.records[table]
                     break
 
             if table_class is not None:
-                if table_class.keyId == variable_name and hasattr(table_class, 'offset'):
+                if table_class.id == variable_name:
                     offset = table_class.offset
+                    return f"sp_GLOBAL[{offset}]"
 
-                    if class_contador == 0:
-                        return f"sp_GLOBAL[{offset}]"
-                    else:
-                        return f"sp[{offset}]"
-
-                    class_contador += 1
+            if table_function is not None:
+                if table_function.id == variable_name:
+                    offset = table_class.offset
+                    return f"sp[{offset}]"
+                        
+            if "num" in variable_name:
+                return variable_name
 
             temp = self.new_temp()
             self.emit(f"\t{temp} = {variable_name}")
             return temp
         
-        elif isinstance(ctx, grammarYaplParser.IntegerContext):
-            return ctx.getText()
+        elif isinstance(ctx, grammarYaplParser.IntegerContext) and ctx.INTEGER():
+            return ctx.INTEGER().getText()
         
-        elif isinstance(ctx, grammarYaplParser.StringContext):
+        elif isinstance(ctx, grammarYaplParser.StringContext) and ctx.STRING():
             return ctx.STRING().getText()
         
         elif isinstance(ctx, grammarYaplParser.BoolContext):
@@ -616,3 +634,16 @@ class codigo_intermedio(grammarYaplVisitor):
             output_code.append(code)
 
         return output_code
+    
+    def buscar_funcion(self, ctx):
+        funcion = ""
+        nodo = ctx
+
+        while nodo.parentCtx is not None:
+            if isinstance(nodo.parentCtx, grammarYaplParser.FeatureContext):
+                funcion = nodo.parentCtx.children[0].getText()
+                break
+
+            nodo = nodo.parentCtx
+        
+        return funcion

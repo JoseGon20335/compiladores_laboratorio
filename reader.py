@@ -8,6 +8,7 @@ from antlr_build.grammarYaplVisitor import grammarYaplVisitor
 from visitor_yapl import visitor_yapl
 from CustomErrorListener import CustomErrorListener
 from codigo_intermedio import codigo_intermedio
+from mips import MIPS
 
 class reader():
 
@@ -52,6 +53,9 @@ class reader():
         visitorInstance.visit(tree)
         visitorInstance.fixable()
         retornable = visitorInstance.get_symbol_table()
+        visitorInstance.define_symbol_table(retornable)
+        visitorInstance.addOffset()
+        visitorInstance.print_symbol_table()
 
         print("BOTTOMUP VALIDATOR_________________________________________________________")
 
@@ -63,5 +67,8 @@ class reader():
         visitorInstance2 = codigo_intermedio("codigo_intermedio", retornable, grammarYaplLexer.symbolicNames)
         visitorInstance2.visit(tree)
         codigoIntermedio = visitorInstance2.write_to_file()
+
+        print("MIPS______________________________________________________________________")
+        mipsInstance = MIPS(codigoIntermedio, retornable)
 
         return codigoIntermedio
