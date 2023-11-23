@@ -220,7 +220,7 @@ class MIPS:
                         size = 8  # +4 para el tipo de la clase + 4 para tabla virtual
                         self.last_class_size = size
 
-                        reg = self.get_next_reg()  # Obtener un registro temporal para el tamaño
+                        reg = self.return_next_register()  # Obtener un registro temporal para el tamaño
 
                         self.code.append(f"\n# ------> RESERVAR ESPACIO EN EL HEAP PARA LA CLASE Object")
                         self.code.append(f"    li $a0, {size}")    # Tamaño de la clase
@@ -235,8 +235,8 @@ class MIPS:
                         self.code.append("    move $s6, $s7")          # Cambiar s7 a s6
                         self.code.append(f"    move $s7, {reg}")       # Guardar la dirección de la instancia de la clase en $s7
 
-                        self.release_reg(reg)                               # Liberar el registro temporal
-                        self.release_reg(heap_reg)                           # Liberar el registro temporal
+                        self.liberated_register(reg)                               # Liberar el registro temporal
+                        self.liberated_register(heap_reg)                           # Liberar el registro temporal
 
                         # Regresar a donde se estaba
                         self.code.append("    jr $ra\n")
@@ -254,7 +254,7 @@ class MIPS:
                     size = int(tokens[-1]) + 8  # +4 para el tipo de la clase
                     self.last_class_size = size
 
-                    reg = self.get_next_reg()  # Obtener un registro temporal para el tamaño
+                    reg = self.return_next_register()  # Obtener un registro temporal para el tamaño
 
                     self.code.append(f"\n# ------> RESERVAR ESPACIO EN EL HEAP PARA LA CLASE {class_name}")
                     self.code.append(f"    li $a0, {size}")    # Tamaño de la clase
@@ -279,8 +279,8 @@ class MIPS:
                         self.code.append("    move $s6, $s7")          # Cambiar s7 a s6
                         self.code.append(f"    move $s7, {reg}")       # Guardar la dirección de la instancia de la clase en $s7
 
-                    self.release_reg(reg)                               # Liberar el registro temporal
-                    self.release_reg(heap_reg)                           # Liberar el registro temporal
+                    self.liberated_register(reg)                               # Liberar el registro temporal
+                    self.liberated_register(heap_reg)                           # Liberar el registro temporal
 
             # ----------------- DECLARAR FUNCIONES -----------------
             elif "FUNCTION" in line:
@@ -467,7 +467,7 @@ class MIPS:
                         self.code.append(f"    move $a0, {heap_reg}")
 
                         # Liberar el registro temporal
-                        self.release_reg(heap_reg)
+                        self.liberated_register(heap_reg)
 
                     # ----------------- Si es un registro o variable -----------------
 
@@ -686,7 +686,7 @@ class MIPS:
                     # Si no OVERRIDE TYPE @
                     if "@" not in tokens[3].split('.')[0]:
                         # En $s1 se encuentra la dirección de la clase que llama a la función
-                        reg_temp = self.get_next_reg()
+                        reg_temp = self.return_next_register()
 
                         # Acceder a la tabla virtual de la clase que llama a la función
                         self.code.append("    lw $s2, 4($s1)")
@@ -762,7 +762,7 @@ class MIPS:
                                 self.code.append(f"    move $a{i+1}, {heap_reg}")
 
                                 # Liberar el registro temporal
-                                self.release_reg(heap_reg)
+                                self.liberated_register(heap_reg)
 
                     # Guardar los registros temporales en el stack
                     self.code.append("    jal save_registers")
@@ -771,7 +771,7 @@ class MIPS:
                     if "@" not in tokens[3].split('.')[0]:
                         # Llamar a la función seg´un la dirección guardada en $t0
                         self.code.append(f"    jalr {reg_temp}")
-                        self.release_reg(reg_temp)
+                        self.liberated_register(reg_temp)
 
                     else:
                         # Llamar a la función por tu etiqueta directamente
@@ -878,17 +878,17 @@ class MIPS:
 
                     # Inicializar la variable global en el stack
                     if value.isdigit():  # Si el valor es un dígito, lo tratamos como un número inmediato
-                        value_reg = self.get_next_reg()  # Obtener un registro temporal para el valor
+                        value_reg = self.return_next_register()  # Obtener un registro temporal para el valor
                         self.code.append(f"    li {value_reg}, {value}")
                         self.code.append(f"    sw {value_reg}, {index}($s7)\n")
-                        self.release_reg(value_reg)  # Liberar el registro temporal
+                        self.liberated_register(value_reg)  # Liberar el registro temporal
                         
                     else:
                         # Si el valor es una cadena, se almacenar en el heap y luego
                         # se almacena la dirección en el stack
                         heap_reg = self.heap_save_string(value)
                         self.code.append(f"    sw {heap_reg}, {index}($s7)\n")
-                        self.release_reg(heap_reg)  # Liberar el registro temporal
+                        self.liberated_register(heap_reg)  # Liberar el registro temporal
 
 
                 # Llamar a la función
@@ -948,17 +948,17 @@ class MIPS:
 
                     # Inicializar la variable global en el stack
                     if value.isdigit():  # Si el valor es un dígito, lo tratamos como un número inmediato
-                        value_reg = self.get_next_reg()  # Obtener un registro temporal para el valor
+                        value_reg = self.return_next_register()  # Obtener un registro temporal para el valor
                         self.code.append(f"    li {value_reg}, {value}")
                         self.code.append(f"    sw {value_reg}, {index}($s1)\n")
-                        self.release_reg(value_reg)  # Liberar el registro temporal
+                        self.liberated_register(value_reg)  # Liberar el registro temporal
                         
                     else:
                         # Si el valor es una cadena, se almacenar en el heap y luego
                         # se almacena la dirección en el stack
                         heap_reg = self.heap_save_string(value)
                         self.code.append(f"    sw {heap_reg}, {index}($s1)\n")
-                        self.release_reg(heap_reg)  # Liberar el registro temporal
+                        self.liberated_register(heap_reg)  # Liberar el registro temporal
 
                 # Llamar a la función
                 class_calling = tokens[2]
@@ -1034,7 +1034,7 @@ class MIPS:
                         # se almacena la dirección en el stack
                         heap_reg = self.heap_save_string(value)
                         self.code.append(f"    sw {heap_reg}, {index}($sp)\n")
-                        self.release_reg(heap_reg)  # Liberar el registro temporal
+                        self.liberated_register(heap_reg)  # Liberar el registro temporal
 
                 # Llamar a la función
                 class_calling = tokens[2]
@@ -1092,7 +1092,7 @@ class MIPS:
                         # se almacena la dirección en el stack
                         heap_reg = self.heap_save_string(value)
                         self.code.append(f"    move $t{index}, {heap_reg}")
-                        self.release_reg(heap_reg)
+                        self.liberated_register(heap_reg)
 
                 elif "not" in tokens[2]:
                     registro1 = tokens[0].split('[')[1].split(']')[0]
@@ -1309,7 +1309,7 @@ class MIPS:
                     # Almacenar la cadena en el heap
                     heap_reg = self.heap_save_string(tokens[1])
                     self.code.append(f"    move $v0, {heap_reg}")  # Cargar la dirección de la cadena
-                    self.release_reg(heap_reg)  # Liberar el registro temporal
+                    self.liberated_register(heap_reg)  # Liberar el registro temporal
 
                 # RETURN void
                 elif "void" in tokens[1]:
@@ -1377,7 +1377,7 @@ class MIPS:
 
         size = len(string) + 1
         register = self.heap_allocation(size)
-        register2 = self.get_next_reg()
+        register2 = self.return_next_register()
 
         self.code.append("\n# ---> ALMACENAR CADENA EN HEAP (EN EL ESPACIO RESERVADO)")
 
@@ -1386,5 +1386,5 @@ class MIPS:
             self.code.append(f"    sb {register2}, {key}({register})")
 
         self.code.append(f"    sb $zero, {size - 1}({register})\n")
-        self.release_reg(register2)
+        self.liberated_register(register2)
         return register
