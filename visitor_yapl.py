@@ -87,6 +87,9 @@ class visitor_yapl(grammarYaplVisitor):
         myTab.max_width['ID'] = 30
 
         for key, value in self.symbol_table.records.items():
+            print(key, value.id, value.type, value.line, value.scope, value.inherit, value.params, value.byte, value.offset)
+
+        for key, value in self.symbol_table.records.items():
             if value.byte != -1:
                 myTab.add_row([
                     value.id, 

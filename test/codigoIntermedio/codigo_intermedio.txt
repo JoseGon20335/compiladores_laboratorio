@@ -1,7 +1,72 @@
-CLASS Main INHERITS ['IO'] SIZE 0
+CLASS Factorial SIZE 8
+	sp_GLOBAL[4] = 0
+
+FUNCTION Factorial.factorial SIZE 4
+	sp[0] = Int.PARAM_0
+	IF None GOTO label1
+	GOTO label2
+LABEL label1
+	REGISTRO[0] = None
+	GOTO label3
+LABEL label2
+	IF None GOTO label4
+	GOTO label5
+LABEL label4
+	REGISTRO[4] = None
+	GOTO label6
+LABEL label5
+	REGISTRO[4] = None
+LABEL label6 
+
+	REGISTRO[0] = REGISTRO[4]
+LABEL label3 
+
+	REGISTRO[0] = f
+	RETURN REGISTRO[0]
+END FUNCTION Factorial.factorial
+END CLASS Factorial
+
+CLASS Fibonacci SIZE 8
+	sp_GLOBAL[4] = 0
+
+FUNCTION Fibonacci.fibonacci SIZE 4
+	sp[0] = Int.PARAM_0
+	IF None GOTO label7
+	GOTO label8
+LABEL label7
+	REGISTRO[4] = None
+	GOTO label9
+LABEL label8
+	IF None GOTO label10
+	GOTO label11
+LABEL label10
+	REGISTRO[0] = None
+	GOTO label12
+LABEL label11
+	REGISTRO[0] = None
+LABEL label12 
+
+	REGISTRO[4] = REGISTRO[0]
+LABEL label9 
+
+	REGISTRO[0] = f
+	RETURN REGISTRO[0]
+END FUNCTION Fibonacci.fibonacci
+END CLASS Fibonacci
+
+CLASS Main INHERITS ['IO'] SIZE 24
+	sp_GLOBAL[168] = 10
 
 FUNCTION Main.main SIZE 8
-	REGISTRO[0] = CALL Main.out_string("Hello, World.\n")
+	REGISTRO[4] = facto
+	REGISTRO[0] = n
+	REGISTRO[8] = CALL REGISTRO[4].factorial(REGISTRO[0])
+	REGISTRO[0] = CALL Main.out_int(REGISTRO[8])
+	REGISTRO[0] = fibo
+	REGISTRO[4] = n
+	REGISTRO[8] = CALL REGISTRO[0].fibonacci(REGISTRO[4])
+	REGISTRO[0] = CALL Main.out_int(REGISTRO[8])
+	REGISTRO[0] = self
 	RETURN REGISTRO[0]
 END FUNCTION Main.main
 END CLASS Main

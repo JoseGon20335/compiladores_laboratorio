@@ -14,6 +14,7 @@ class codigo_intermedio(grammarYaplVisitor):
         self.temp_counter = 0  
         self.label_counter = 0 
         self.output_code = []  
+        # self.node_types = nodes_types
 
     def visitProgram(self, ctx:grammarYaplParser.ProgramContext):
         self.last_node_visited = ctx
@@ -160,44 +161,51 @@ class codigo_intermedio(grammarYaplVisitor):
 
     def visitExpr(self, ctx:grammarYaplParser.ExprContext):
         self.last_node_visited = ctx
+        
         if hasattr(ctx, 'DOT'):
             if ctx.DOT():
-                base_expr = None
-                if ctx.expr(0):
-                    base_expr = self.visitExpr(ctx.expr(0))
-                else:
-                    base_expr = self.visitExpr(ctx.expr())
-                print(base_expr)
+                # Obtener la expresión base (objeto en el que se invoca el método)
+                base_expr = self.visitExpr(ctx.expr(0))
+
+                # Crear un temporal si la base es una creación de objeto
                 if "new " in base_expr:
                     temp0 = self.new_temp()
                     self.emit(f"\t{temp0} = {base_expr}")
                     base_expr = temp0
 
+                # Verificar si hay una especificación de tipo con AT
                 type_override = None
                 if ctx.AT():
                     third_child = ctx.children[2]
                     if third_child.getSymbol().type == self.symbolic_names.index("TYPE_ID"):
                         type_override = third_child.getText()
-                
+
+                # Obtener el nombre del método
                 method_name = ctx.OBJECT_ID().getText()
 
+                # Manejo especial para el método 'type_name'
                 if method_name == "type_name":
-                    type_element = self.nodes_types[ctx.expr()]
-
+                    # type_element = self.nodes_types[ctx.expr(0)]
+                    
+                    type_element = self.inferir_tipo(ctx.expr(0))
+                    
                     if "Int" in type_element or "String" in type_element or "Bool" in type_element:
                         temp = self.new_temp()
                         self.emit(f"\t{temp} = '{type_element}'")
                         return temp
 
+                # Obtener argumentos si los hay
                 arguments = [self.visitExpr(e) for e in ctx.expr()[1:]]
-                
+
+                # Generar código intermedio para la llamada al método
                 temp = self.new_temp()
                 if type_override:
                     self.emit(f"\t{temp} = CALL {base_expr}@{type_override}.{method_name}({','.join(arg for arg in arguments)})")
                 else:
                     self.emit(f"\t{temp} = CALL {base_expr}.{method_name}({','.join(arg for arg in arguments)})")
-                
+
                 return temp
+            
         elif hasattr(ctx, 'OBJECT_ID') and hasattr(ctx, 'LPAREN'):
             if ctx.OBJECT_ID() and ctx.LPAREN():
                 method_name = ctx.OBJECT_ID().getText()
@@ -338,7 +346,7 @@ class codigo_intermedio(grammarYaplVisitor):
             if ctx.NEW():
                 temp = self.new_temp()
                 clase = ctx.children[1].getText()
-                self.emit(f"\t{temp} = new {clase}")
+                temp = (f"new {clase}")
                 return temp
 
         elif hasattr(ctx, 'NEG'):
@@ -350,6 +358,7 @@ class codigo_intermedio(grammarYaplVisitor):
         
         elif hasattr(ctx, 'ISVOID'):
             if ctx.ISVOID():
+                
                 operand = self.visitExpr(ctx.expr())
                 temp = self.new_temp()
                 self.emit(f"\t{temp} = isvoid {operand}")
@@ -440,7 +449,7 @@ class codigo_intermedio(grammarYaplVisitor):
         
         elif hasattr(ctx, 'LPAREN'):
             if ctx.LPAREN():
-                return self.visit(ctx.expr())
+                return self.visitExpr(ctx.expr())
 
         elif hasattr(ctx, 'OBJECT_ID'):
             if ctx.OBJECT_ID():
@@ -470,6 +479,24 @@ class codigo_intermedio(grammarYaplVisitor):
                         offset = table_class.offset
                         return f"sp[{offset}]"
                             
+                if "num" in variable_name:
+                    return variable_name
+
+                temp = self.new_temp()
+                self.emit(f"\t{temp} = {variable_name}")
+                return temp
+
+        elif isinstance(ctx, grammarYaplParser.SelfContext):
+            # Obtener el nombre de la clase actual
+            # Obtener el nombre de la clase actual para 'self'
+            class_name = self.buscar_clase(ctx)
+
+            if hasattr(ctx.parentCtx, 'DOT'):
+                method_or_attribute_name = ctx.parentCtx.OBJECT_ID().getText()
+                
+            else:
+                variable_name = ctx.getText()
+                # variable_name = ctx.parentCtx.OBJECT_ID().getText()                    
                 if "num" in variable_name:
                     return variable_name
 
@@ -515,7 +542,7 @@ class codigo_intermedio(grammarYaplVisitor):
         return default_values.get(type_name, "None")
     
     def buscar_en_tabla(self, name):
-        for symbol in self.symbol_table:
+        for symbol in self.symbol_tables:
             if symbol['keyId'].split('.')[-1] == name:
                 return symbol
         return None
@@ -665,3 +692,64 @@ class codigo_intermedio(grammarYaplVisitor):
             nodo = nodo.parentCtx
         
         return funcion
+    
+    def inferir_tipo(self, expr_ctx):
+        # 
+        if isinstance(expr_ctx, grammarYaplParser.ParenthesisContext):
+            # Recursivamente llama a inferir_tipo con la expresión dentro de los paréntesis
+            return self.inferir_tipo(expr_ctx.expr())
+        # Si expr_ctx es un literal numérico, cadena o booleano
+        if isinstance(expr_ctx, grammarYaplParser.IntegerContext):
+            return "Int"
+        elif isinstance(expr_ctx, grammarYaplParser.StringContext):
+            return "String"
+        elif isinstance(expr_ctx, grammarYaplParser.BoolContext):
+            return "Bool"
+        # Si expr_ctx es un contexto de 'isvoid'
+        elif isinstance(expr_ctx, grammarYaplParser.IsvoidContext):
+            # Normalmente, el resultado de 'isvoid' sería un booleano
+            return "Bool"
+
+        # Si expr_ctx es un identificador de objeto
+        elif isinstance(expr_ctx, grammarYaplParser.Object_idContext):
+            # Buscar el símbolo en la tabla de símbolos y devolver su tipo
+            nombre_objeto = expr_ctx.getText()
+            simbolo = None
+            for i in self.symbol_tables.records:
+                temp = self.symbol_tables.records[i]
+                if temp.id == nombre_objeto:
+                    simbolo = i
+            if simbolo:
+                return simbolo.type
+            else:
+                return "Unknown"
+
+        # Si expr_ctx es una llamada a función o método
+        elif hasattr(expr_ctx, 'DOT') or (hasattr(expr_ctx, 'OBJECT_ID') and hasattr(expr_ctx, 'LPAREN')):
+            nombre_metodo = expr_ctx.OBJECT_ID(0).getText()
+            simbolo_metodo = None
+            for i in self.symbol_tables.records:
+                temp = self.symbol_tables.records[i]
+                if temp.id == nombre_metodo:
+                    simbolo_metodo = i
+            if simbolo_metodo and simbolo_metodo.returnType is not None:
+                return simbolo_metodo.returnType
+            else:
+                return "Unknown"
+
+        # Si expr_ctx es una creación de instancia (new Object)
+        elif isinstance(expr_ctx, grammarYaplParser.NewContext):
+            nombre_clase = expr_ctx.TYPE_ID().getText()
+            simbolo_clase = None
+            for i in self.symbol_tables.records:
+                temp = self.symbol_tables.records[i]
+                if temp.id == nombre_clase:
+                    simbolo_clase = i
+            if simbolo_clase:
+                return nombre_clase 
+
+        # Caso por defecto
+        else:
+            # Retorna un tipo genérico o desconocido
+            return "Unknown"
+
