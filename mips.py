@@ -229,7 +229,7 @@ class MIPS:
                         self.code.append(f"    move {reg}, $v0")  # Mover la dirección del heap al registro temporal
 
                         # Guardar en un espacio de heap el nombre de la clase
-                        heap_reg = self.store_string_on_heap(clase)
+                        heap_reg = self.heap_save_string(clase)
                         self.code.append(f"    sw {heap_reg}, 0({reg})")  # Guardar el nombre de la clase en el heap
 
                         self.code.append("    move $s6, $s7")          # Cambiar s7 a s6
@@ -263,7 +263,7 @@ class MIPS:
                     self.code.append(f"    move {reg}, $v0")  # Mover la dirección del heap al registro temporal
                     
                     # Guardar en un espacio de heap el nombre de la clase
-                    heap_reg = self.store_string_on_heap(class_name)
+                    heap_reg = self.heap_save_string(class_name)
                     self.code.append(f"    sw {heap_reg}, 0({reg})")  # Guardar el nombre de la clase en el heap
 
                     # Guardar en un espacio de heap la tabla virtual
@@ -461,7 +461,7 @@ class MIPS:
                         string_to_print = string_to_print.group(1)
 
                         # Almacenar la cadena en el heap
-                        heap_reg = self.store_string_on_heap(string_to_print)
+                        heap_reg = self.heap_save_string(string_to_print)
 
                         # Pasarle la dirección de la cadena a la función
                         self.code.append(f"    move $a0, {heap_reg}")
@@ -756,7 +756,7 @@ class MIPS:
                             # Si es un string
                             elif '"' in parametros[i]:
                                 # Almacenar la cadena en el heap
-                                heap_reg = self.store_string_on_heap(parametros[i])
+                                heap_reg = self.heap_save_string(parametros[i])
 
                                 # Pasarle la dirección de la cadena a la función
                                 self.code.append(f"    move $a{i+1}, {heap_reg}")
@@ -886,7 +886,7 @@ class MIPS:
                     else:
                         # Si el valor es una cadena, se almacenar en el heap y luego
                         # se almacena la dirección en el stack
-                        heap_reg = self.store_string_on_heap(value)
+                        heap_reg = self.heap_save_string(value)
                         self.code.append(f"    sw {heap_reg}, {index}($s7)\n")
                         self.release_reg(heap_reg)  # Liberar el registro temporal
 
@@ -956,7 +956,7 @@ class MIPS:
                     else:
                         # Si el valor es una cadena, se almacenar en el heap y luego
                         # se almacena la dirección en el stack
-                        heap_reg = self.store_string_on_heap(value)
+                        heap_reg = self.heap_save_string(value)
                         self.code.append(f"    sw {heap_reg}, {index}($s1)\n")
                         self.release_reg(heap_reg)  # Liberar el registro temporal
 
@@ -1032,7 +1032,7 @@ class MIPS:
                     else:
                         # Si el valor es una cadena, se almacenar en el heap y luego
                         # se almacena la dirección en el stack
-                        heap_reg = self.store_string_on_heap(value)
+                        heap_reg = self.heap_save_string(value)
                         self.code.append(f"    sw {heap_reg}, {index}($sp)\n")
                         self.release_reg(heap_reg)  # Liberar el registro temporal
 
@@ -1090,7 +1090,7 @@ class MIPS:
                     else:
                         # Si el valor es una cadena, se almacenar en el heap y luego
                         # se almacena la dirección en el stack
-                        heap_reg = self.store_string_on_heap(value)
+                        heap_reg = self.heap_save_string(value)
                         self.code.append(f"    move $t{index}, {heap_reg}")
                         self.release_reg(heap_reg)
 
@@ -1307,7 +1307,7 @@ class MIPS:
                 elif '"' in tokens[1]:
                     self.code.append("\n# ------> RETURN string;")
                     # Almacenar la cadena en el heap
-                    heap_reg = self.store_string_on_heap(tokens[1])
+                    heap_reg = self.heap_save_string(tokens[1])
                     self.code.append(f"    move $v0, {heap_reg}")  # Cargar la dirección de la cadena
                     self.release_reg(heap_reg)  # Liberar el registro temporal
 
@@ -1332,3 +1332,59 @@ class MIPS:
         for key, table in self.symbol_table.records:
             if key == name:
                 return table.type 
+
+    def return_next_register(self):
+        items = list(self.temp_usage.items())
+        items = items[::-1]
+
+        for key, value in items:
+            if not value:
+                self.temp_usage[key] = True
+                return key
+        print("ERROR: No hay registros disponibles")
+
+    def liberated_register(self, register):
+        if register in self.temp_usage:
+            self.temp_usage[register] = False
+
+    def push_stack(self, register):
+        self.code.append("\n# ---> PUSH STACK")
+        self.code.append(f"    addi $sp, $sp, -4")
+        self.code.append(f"    sw {register}, 0($sp)\n")
+
+    def pop_stack(self, register):
+        self.code.append("\n# ---> POP STACK")
+        self.code.append(f"    lw {register}, 0($sp)")
+        self.code.append(f"    addi $sp, $sp, 4\n")
+
+    def heap_allocation(self, size):
+        register = self.return_next_register()
+        self.code.append("\n# ---> ALLOCATION {size} BYTES")
+        self.code.append(f"    li {register}, {size}")
+        self.code.append(f"    move $a0, {register}")
+        self.code.append(f"    li $v0, 9")
+        self.code.append(f"    syscall")
+        self.code.append(f"    move {register}, $v0")
+        return register
+    
+    def heap_save_string(self, string):
+        string = bytes(string, "utf-8").decode("unicode_escape")
+
+        if string[0] == '"' or string[0] == "'":
+            string = string[1:]
+        if string[-1] == '"' or string[-1] == "'":
+            string = string[:-1]
+
+        size = len(string) + 1
+        register = self.heap_allocation(size)
+        register2 = self.get_next_reg()
+
+        self.code.append("\n# ---> ALMACENAR CADENA EN HEAP (EN EL ESPACIO RESERVADO)")
+
+        for key, value in enumerate(string):
+            self.code.append(f"    li {register2}, {ord(value)}")
+            self.code.append(f"    sb {register2}, {key}({register})")
+
+        self.code.append(f"    sb $zero, {size - 1}({register})\n")
+        self.release_reg(register2)
+        return register

@@ -70,5 +70,6 @@ class reader():
 
         print("MIPS______________________________________________________________________")
         mipsInstance = MIPS(codigoIntermedio, retornable)
+        mipsCode = mipsInstance.generate()
 
         return codigoIntermedio
