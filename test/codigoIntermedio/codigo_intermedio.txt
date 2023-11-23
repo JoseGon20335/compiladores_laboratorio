@@ -1,73 +1,78 @@
-CLASS Factorial SIZE 8
-	sp_GLOBAL[4] = 0
+CLASS Main SIZE 152
+	REGISTRO[0] = CALL Main.out_string("2 is trivially prime.\n")
+	sp_GLOBAL[8] = 2
+	sp_GLOBAL[144] = sp_GLOBAL[8]
+	sp_GLOBAL[152] = 500
 
-FUNCTION Factorial.factorial SIZE 4
-	sp[0] = Int.PARAM_0
-	IF None GOTO label1
-	GOTO label2
+FUNCTION Main.main SIZE 8
 LABEL label1
-	REGISTRO[0] = None
-	GOTO label3
+	IF NOT true GOTO label3
+	GOTO label2
 LABEL label2
-	IF None GOTO label4
-	GOTO label5
+	REGISTRO[0] = sp_GLOBAL[144] + 1
+	sp_GLOBAL[144] = REGISTRO[0]
+	sp_GLOBAL[148] = 2
 LABEL label4
-	REGISTRO[4] = None
-	GOTO label6
-LABEL label5
-	REGISTRO[4] = None
-LABEL label6 
-
-	REGISTRO[0] = REGISTRO[4]
-LABEL label3 
-
-	REGISTRO[0] = f
-	RETURN REGISTRO[0]
-END FUNCTION Factorial.factorial
-END CLASS Factorial
-
-CLASS Fibonacci SIZE 8
-	sp_GLOBAL[4] = 0
-
-FUNCTION Fibonacci.fibonacci SIZE 4
-	sp[0] = Int.PARAM_0
-	IF None GOTO label7
+	REGISTRO[4] = sp_GLOBAL[148] * sp_GLOBAL[148]
+	REGISTRO[0] = sp_GLOBAL[144] < REGISTRO[4]
+	IF REGISTRO[0] GOTO label7
 	GOTO label8
 LABEL label7
-	REGISTRO[4] = None
+	REGISTRO[4] = false
 	GOTO label9
 LABEL label8
-	IF None GOTO label10
+	REGISTRO[0] = sp_GLOBAL[144] / sp_GLOBAL[148]
+	REGISTRO[8] = sp_GLOBAL[148] * REGISTRO[0]
+	REGISTRO[0] = sp_GLOBAL[144] - REGISTRO[8]
+	REGISTRO[8] = REGISTRO[0] == 0
+	IF REGISTRO[8] GOTO label10
 	GOTO label11
 LABEL label10
-	REGISTRO[0] = None
+	REGISTRO[0] = false
 	GOTO label12
 LABEL label11
-	REGISTRO[0] = None
+	REGISTRO[0] = true
 LABEL label12 
 
 	REGISTRO[4] = REGISTRO[0]
 LABEL label9 
 
-	REGISTRO[0] = f
-	RETURN REGISTRO[0]
-END FUNCTION Fibonacci.fibonacci
-END CLASS Fibonacci
+	IF NOT REGISTRO[4] GOTO label6
+	GOTO label5
+LABEL label5
+	REGISTRO[0] = sp_GLOBAL[148] + 1
+	sp_GLOBAL[148] = REGISTRO[0]
+	GOTO label4
+LABEL label6 
 
-CLASS Main INHERITS ['IO'] SIZE 24
-	sp_GLOBAL[168] = 10
+	REGISTRO[4] = sp_GLOBAL[148] * sp_GLOBAL[148]
+	REGISTRO[0] = sp_GLOBAL[144] < REGISTRO[4]
+	IF REGISTRO[0] GOTO label13
+	GOTO label14
+LABEL label13
+	sp_GLOBAL[8] = sp_GLOBAL[144]
+	REGISTRO[4] = CALL Main.out_int(sp_GLOBAL[8])
+	REGISTRO[0] = CALL Main.out_string(" is prime.\n")
+	REGISTRO[4] = REGISTRO[0]
+	GOTO label15
+LABEL label14
+	REGISTRO[4] = 0
+LABEL label15 
 
-FUNCTION Main.main SIZE 8
-	REGISTRO[4] = facto
-	REGISTRO[0] = n
-	REGISTRO[8] = CALL REGISTRO[4].factorial(REGISTRO[0])
-	REGISTRO[0] = CALL Main.out_int(REGISTRO[8])
-	REGISTRO[0] = fibo
-	REGISTRO[4] = n
-	REGISTRO[8] = CALL REGISTRO[0].fibonacci(REGISTRO[4])
-	REGISTRO[0] = CALL Main.out_int(REGISTRO[8])
-	REGISTRO[0] = self
-	RETURN REGISTRO[0]
+	REGISTRO[0] = sp_GLOBAL[152] <= sp_GLOBAL[144]
+	IF REGISTRO[0] GOTO label16
+	GOTO label17
+LABEL label16
+	REGISTRO[4] = "halt"
+	GOTO label18
+LABEL label17
+	REGISTRO[4] = "continue"
+LABEL label18 
+
+	GOTO label1
+LABEL label3 
+
+	RETURN Object
 END FUNCTION Main.main
 END CLASS Main
 

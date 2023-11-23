@@ -146,22 +146,14 @@ class codigo_intermedio(grammarYaplVisitor):
             self.emit(f"{temp} = {value}")
             return temp
 
-    # def visitAddSub(self, ctx:grammarYaplParser.AddSubContext):
-    #     left_operand = self.visit(ctx.expr())
-    #     right_operand = self.visit(ctx.expr(1))
-    #     temp = self.new_temp()
-
-        
-    #     if ctx.PLUS():
-    #         self.emit(f"\t{temp} = {left_operand} + {right_operand}")
-    #     elif ctx.MINUS():
-    #         self.emit(f"\t{temp} = {left_operand} - {right_operand}")
-
-    #     return temp
-
     def visitExpr(self, ctx:grammarYaplParser.ExprContext):
         self.last_node_visited = ctx
-        
+        print("-----")
+        try:
+            print(ctx.getText(), type(ctx))
+        except:
+            print("ctx raro pero veamos", type(ctx))
+            
         if hasattr(ctx, 'DOT'):
             if ctx.DOT():
                 # Obtener la expresión base (objeto en el que se invoca el método)
@@ -231,7 +223,7 @@ class codigo_intermedio(grammarYaplVisitor):
 
         elif hasattr(ctx, 'IF'):
             if ctx.IF():
-                condicion = ctx.expr()
+                condicion = ctx.expr(0)
                 rama_then = ctx.expr(1)
                 rama_else = ctx.expr(2)
 
@@ -262,7 +254,7 @@ class codigo_intermedio(grammarYaplVisitor):
                 label_loop = self.new_label()
                 label_end = self.new_label()
                 self.emit(f"LABEL {label_start}")
-                condition_temp = self.visitExpr(ctx.expr())
+                condition_temp = self.visitExpr(ctx.expr(0))
 
                 if condition_temp is None:
                     a = 5
@@ -351,7 +343,7 @@ class codigo_intermedio(grammarYaplVisitor):
 
         elif hasattr(ctx, 'NEG'):
             if ctx.NEG():
-                operand = self.visitExpr(ctx.expr())
+                operand = self.visitExpr(ctx.expr(0))
                 temp = self.new_temp()
                 self.emit(f"\t{temp} = NEG {operand}")
                 return temp
@@ -359,48 +351,39 @@ class codigo_intermedio(grammarYaplVisitor):
         elif hasattr(ctx, 'ISVOID'):
             if ctx.ISVOID():
                 
-                operand = self.visitExpr(ctx.expr())
+                operand = self.visitExpr(ctx.expr(0))
                 temp = self.new_temp()
                 self.emit(f"\t{temp} = isvoid {operand}")
                 return temp
 
         elif hasattr(ctx, 'MULT') or hasattr(ctx, 'DIV'):
             if ctx.MULT() or ctx.DIV():
-                left_operand = self.visitExpr(ctx.expr())
+                left_operand = self.visitExpr(ctx.expr(0))
                 right_operand = self.visitExpr(ctx.expr(1))
                 temp = self.new_temp()
                 if ctx.MULT():  
                     self.emit(f"\t{temp} = {left_operand} * {right_operand}")
-                elif ctx.DIV():  
+                if ctx.DIV():  
                     self.emit(f"\t{temp} = {left_operand} / {right_operand}")
                 return temp
 
         elif hasattr(ctx, 'PLUS') and hasattr(ctx, 'MINUS'):
             if ctx.PLUS() or ctx.MINUS():
-                left_operand = self.visitExpr(ctx.expr())
+                left_operand = self.visitExpr(ctx.expr(0))
                 right_operand = self.visitExpr(ctx.expr(1))
                 temp = self.new_temp()
                 if ctx.PLUS():
                     self.emit(f"\t{temp} = {left_operand} + {right_operand}")
-                elif ctx.MINUS():
+                if ctx.MINUS():
                     self.emit(f"\t{temp} = {left_operand} - {right_operand}")
                 return temp
-
-        # elif isinstance(ctx, grammarYaplParser.MinusContext):
-        #     operand = self.visitExpr(ctx.expr())
-        #     temp = self.new_temp()
-        #     self.emit(f"\t{temp} = - {operand}")
-        #     return temp
-
+        
         elif hasattr(ctx, 'EQ') or hasattr(ctx, 'LE') or hasattr(ctx, 'LT'):
             if ctx.EQ() or ctx.LE() or ctx.LT():
-                left_operand = self.visitExpr(ctx.expr())
+                left_operand = self.visitExpr(ctx.expr(0))
                 right_operand = self.visitExpr(ctx.expr(1))
                 temp = self.new_temp()
                 if ctx.EQ():
-                    left_operand = self.visitExpr(ctx.expr())
-                    right_operand = self.visitExpr(ctx.expr(1))
-                    temp = self.new_temp()
                     self.emit(f"\t{temp} = {left_operand} == {right_operand}")
                 elif ctx.LE():
                     self.emit(f"\t{temp} = {left_operand} <= {right_operand}")
@@ -410,7 +393,7 @@ class codigo_intermedio(grammarYaplVisitor):
 
         elif hasattr(ctx, 'NOT'):      
             if ctx.NOT():
-                operand = self.visitExpr(ctx.expr())
+                operand = self.visitExpr(ctx.expr(0))
                 temp = self.new_temp()
                 self.emit(f"\t{temp} = NOT {operand}")
                 return temp
@@ -418,34 +401,34 @@ class codigo_intermedio(grammarYaplVisitor):
         elif hasattr(ctx, 'ASSIGN'):
             if ctx.ASSIGN():
                 variable_name = ctx.OBJECT_ID().getText()
-                var_value = self.visit(ctx.expr())
+                var_value = self.visitExpr(ctx.expr())
 
                 class_name = self.buscar_clase(ctx)
                 function_name = self.buscar_funcion(ctx)
-                table_class = None
-                table_function = None
+                table_class = []
+                table_function = []
 
                 for table in self.symbol_tables.records:
                     table_temp = self.symbol_tables.records[table]
-                    if table_temp.id == class_name:
-                        table_class = self.symbol_tables.records[table]
-
+                    if table_temp.scope == class_name:
+                        table_class.append(self.symbol_tables.records[table])
+                    
+                for table in self.symbol_tables.records:
                     table_temp = self.symbol_tables.records[table]
                     if table_temp.id == function_name and table_class is not None:
-                        table_function = self.symbol_tables.records[table]
-                        break
-                        
-                if table_class is not None:
-                    if table_class.id == variable_name:
-                        offset = table_class.offset
-                        self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
-                        return f"sp_GLOBAL[{offset}]"
+                        table_function.append(self.symbol_tables.records[table])
+                
+                if len(table_class) != 0:
+                    for i in table_class:
+                        if i.id == variable_name:
+                            self.emit(f"\tsp_GLOBAL[{i.offset}] = {var_value}")
+                            return f"sp_GLOBAL[{i.offset}]"
 
-                if table_function is not None:
-                    if table_class.id == variable_name:
-                        offset = table_class.offset
-                        self.emit(f"\tsp[{offset}] = {var_value}")
-                        return f"sp[{offset}]"
+                if len(table_function) != 0:
+                    for i in table_function:
+                        if i.id == variable_name:
+                            self.emit(f"\tsp[{i.offset}] = {var_value}")
+                            return f"sp[{i.offset}]"
         
         elif hasattr(ctx, 'LPAREN'):
             if ctx.LPAREN():
@@ -455,29 +438,41 @@ class codigo_intermedio(grammarYaplVisitor):
             if ctx.OBJECT_ID():
                 variable_name = ctx.OBJECT_ID().getText()
 
+                if variable_name == "true" or variable_name == "false":
+                    return variable_name
+
                 class_name = self.buscar_clase(ctx)
                 function_name = self.buscar_funcion(ctx)
-                table_class = None
-                table_function = None
+                table_class = []
+                table_function = []
 
                 for table in self.symbol_tables.records:
                     table_temp = self.symbol_tables.records[table]
-                    if table_temp.id == class_name:
-                        table_class = self.symbol_tables.records[table]
+                    if table_temp.scope == class_name:
+                        table_class.append(self.symbol_tables.records[table])
+                    
+                for table in self.symbol_tables.records:
                     table_temp = self.symbol_tables.records[table]
-                    if table_temp.id == class_name and table_class is not None:
-                        table_function = self.symbol_tables.records[table]
-                        break
-
-                if table_class is not None:
-                    if table_class.id == variable_name:
-                        offset = table_class.offset
-                        return f"sp_GLOBAL[{offset}]"
-
-                if table_function is not None:
-                    if table_function.id == variable_name:
-                        offset = table_class.offset
-                        return f"sp[{offset}]"
+                    if table_temp.id == function_name and table_class is not None:
+                        table_function.append(self.symbol_tables.records[table])
+                if len(table_class) != 0:
+                    for i in table_class:
+                        if i.id == variable_name:
+                            offset = i.offset
+                            return f"sp_GLOBAL[{offset}]"
+                # if table_class is not None:
+                #     if table_class.id == variable_name:
+                #         offset = table_class.offset
+                #         return f"sp_GLOBAL[{offset}]"
+                if len(table_function) != 0:
+                    for i in table_function:
+                        if i.id == variable_name:
+                            offset = i.offset
+                            return f"sp[{offset}]"
+                # if table_function is not None:
+                #     if table_function.id == variable_name:
+                #         offset = table_class.offset
+                #         return f"sp[{offset}]"
                             
                 if "num" in variable_name:
                     return variable_name

@@ -258,27 +258,8 @@ CLASS_Main:
     sw $t8, 16($s7)
 
 
-# ------> REGISTRO[index] = value;
-
-# ---> ALLOCATION {size} BYTES
-    li $t8, 4
-    move $a0, $t8
-    li $v0, 9
-    syscall
-    move $t8, $v0
-
-# ---> ALMACENAR CADENA EN HEAP (EN EL ESPACIO RESERVADO)
-    li $t7, 111
-    sb $t7, 0($t8)
-    li $t7, 117
-    sb $t7, 1($t8)
-    li $t7, 116
-    sb $t7, 2($t8)
-    sb $zero, 3($t8)
-
-    move $t0, $t8
-
-# ------> sp_GLOBAL[index] = REGISTRO[index];
+# ------> sp_GLOBAL[index] = sp_GLOBAL[index];
+    lw $t0, 16($s7)
     sw $t0, 152($s7)
 
 # ------> sp_GLOBAL[index] = value;
@@ -302,7 +283,7 @@ label1:
 
 
 # ------> IF
-    beq None, $zero, label3
+    beq true, $zero, label3
 
 
 # ------> GOTO
@@ -312,32 +293,42 @@ label1:
 # ------> LABEL
 label2:
 
+    lw $s1, 0($sp)
+    lw $s1, 152($s1)
+    li $s2, 1
+    add $t0, $s1, $s2
+    lw $s1, 0($sp)
+
+# ------> sp_GLOBAL[index] = REGISTRO[index];
+    sw $t0, 152($s1)
+    lw $s1, 0($sp)
+
+# ------> sp_GLOBAL[index] = value;
+    li $t8, 2
+    sw $t8, 156($s1)
+
 
 # ------> LABEL
 label4:
 
+    lw $s1, 0($sp)
+    lw $s1, 156($s1)
+    lw $s2, 0($sp)
+    lw $s2, 156($s2)
+    mul $t4, $s1, $s2
+    lw $s1, 0($sp)
+    lw $s1, 152($s1)
+    move $s2, $t4
+    blt $s1, $s2, set_true2
+    li $t0, 0
+    j continue_label2
+set_true2:
+    li $t0, 1
+continue_label2:
 
 # ------> IF
-    beq None, $zero, label6
+    bne $t0, $zero, label7
 
-
-# ------> GOTO
-    j label5
-
-
-# ------> LABEL
-label5:
-
-
-# ------> GOTO
-    j label4
-
-
-# ------> LABEL
-label6:
-
-
-# ------> IF
 
 # ------> GOTO
     j label8
@@ -348,29 +339,138 @@ label7:
 
 
 # ------> REGISTRO[index] = value;
+    li $t4, 0
 
-# ---> ALLOCATION {size} BYTES
-    li $t8, 4
-    move $a0, $t8
-    li $v0, 9
-    syscall
-    move $t8, $v0
+# ------> GOTO
+    j label9
 
-# ---> ALMACENAR CADENA EN HEAP (EN EL ESPACIO RESERVADO)
-    li $t7, 111
-    sb $t7, 0($t8)
-    li $t7, 117
-    sb $t7, 1($t8)
-    li $t7, 116
-    sb $t7, 2($t8)
-    sb $zero, 3($t8)
 
-    move $t4, $t8
+# ------> LABEL
+label8:
+
+    lw $s1, 0($sp)
+    lw $s1, 152($s1)
+    lw $s2, 0($sp)
+    lw $s2, 156($s2)
+    div $t0, $s1, $s2
+    lw $s1, 0($sp)
+    lw $s1, 156($s1)
+    move $s2, $t0
+    mul $t8, $s1, $s2
+    lw $s1, 0($sp)
+    lw $s1, 152($s1)
+    move $s2, $t8
+    sub $t0, $s1, $s2
+    move $s1, $t0
+    li $s2, 0
+    beq $s1, $s2, set_true6
+    li $t8, 0
+    j continue_label6
+set_true6:
+    li $t8, 1
+continue_label6:
+
+# ------> IF
+    bne $t8, $zero, label10
+
+
+# ------> GOTO
+    j label11
+
+
+# ------> LABEL
+label10:
+
+
+# ------> REGISTRO[index] = value;
+    li $t0, 0
+
+# ------> GOTO
+    j label12
+
+
+# ------> LABEL
+label11:
+
+
+# ------> REGISTRO[index] = value;
+    li $t0, 1
+
+# ------> LABEL
+label12:
+
+
+# ------> REGISTRO[index] = REGISTRO[index];
+    move $t4, $t0
+
+# ------> LABEL
+label9:
+
+
+# ------> IF
+    beq $t4, $zero, label6
+
+
+# ------> GOTO
+    j label5
+
+
+# ------> LABEL
+label5:
+
+    lw $s1, 0($sp)
+    lw $s1, 156($s1)
+    li $s2, 1
+    add $t0, $s1, $s2
+    lw $s1, 0($sp)
+
+# ------> sp_GLOBAL[index] = REGISTRO[index];
+    sw $t0, 156($s1)
+
+# ------> GOTO
+    j label4
+
+
+# ------> LABEL
+label6:
+
+    lw $s1, 0($sp)
+    lw $s1, 156($s1)
+    lw $s2, 0($sp)
+    lw $s2, 156($s2)
+    mul $t4, $s1, $s2
+    lw $s1, 0($sp)
+    lw $s1, 152($s1)
+    move $s2, $t4
+    blt $s1, $s2, set_true9
+    li $t0, 0
+    j continue_label9
+set_true9:
+    li $t0, 1
+continue_label9:
+
+# ------> IF
+    bne $t0, $zero, label13
+
+
+# ------> GOTO
+    j label14
+
+
+# ------> LABEL
+label13:
+
+    lw $s1, 0($sp)
+
+# ------> sp_GLOBAL[index] = sp_GLOBAL[index];
+    lw $t0, 152($s1)
+    sw $t0, 16($s1)
     lw $s2, 0($sp)
     move $s1, $s2
 
 # ------> OUT_INT
-    move $a0, $t4
+    lw $s1, 0($sp)
+    lw $a0, 16($s1)
     jal out_int
 
     lw $s2, 0($sp)
@@ -418,28 +518,40 @@ label7:
     move $t4, $t0
 
 # ------> GOTO
-    j label9
+    j label15
 
 
 # ------> LABEL
-label8:
+label14:
 
 
 # ------> REGISTRO[index] = value;
     li $t4, 0
 
 # ------> LABEL
-label9:
+label15:
 
+    lw $s1, 0($sp)
+    lw $s1, 160($s1)
+    lw $s2, 0($sp)
+    lw $s2, 152($s2)
+    ble $s1, $s2, set_true10
+    li $t0, 0
+    j continue_label10
+set_true10:
+    li $t0, 1
+continue_label10:
 
 # ------> IF
+    bne $t0, $zero, label16
+
 
 # ------> GOTO
-    j label11
+    j label17
 
 
 # ------> LABEL
-label10:
+label16:
 
 
 # ------> REGISTRO[index] = value;
@@ -462,14 +574,14 @@ label10:
     sb $t7, 3($t8)
     sb $zero, 4($t8)
 
-    move $t0, $t8
+    move $t4, $t8
 
 # ------> GOTO
-    j label12
+    j label18
 
 
 # ------> LABEL
-label11:
+label17:
 
 
 # ------> REGISTRO[index] = value;
@@ -500,10 +612,10 @@ label11:
     sb $t7, 7($t8)
     sb $zero, 8($t8)
 
-    move $t0, $t8
+    move $t4, $t8
 
 # ------> LABEL
-label12:
+label18:
 
 
 # ------> GOTO
