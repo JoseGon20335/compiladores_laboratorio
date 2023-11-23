@@ -69,7 +69,9 @@ class reader():
         codigoIntermedio = visitorInstance2.write_to_file()
 
         print("MIPS______________________________________________________________________")
-        mipsInstance = MIPS(codigoIntermedio, retornable)
+        mipsInstance = MIPS(codigoIntermedio, retornable, "mips_code")
         mipsCode = mipsInstance.generate()
+        mipsInstance.write_to_file()
+        mipsCode = mipsInstance.print_code()
 
         return codigoIntermedio

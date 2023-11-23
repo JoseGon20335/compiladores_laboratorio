@@ -1,4 +1,4 @@
-CLASS Main INHERITS ['IO']
+CLASS Main INHERITS ['IO'] SIZE 0
 
 FUNCTION Main.main SIZE 8
 	REGISTRO[0] = CALL Main.out_string("Hello, World.\n")

@@ -1,16 +1,27 @@
 import re
 
 class MIPS:
-    def __init__(self, codigo_intermedio, symbol_table):
+    def __init__(self, codigo_intermedio, symbol_table, output_file):
+        self.output_file = output_file
         self.codigo_intermedio = codigo_intermedio
         self.symbol_table = symbol_table
-        self.code = [".code"]
+        self.code = [".data"]
         self.temp_stack = []
         self.counter = 0
         self.temp_usage ={
             f"$t{i}": False for i in range(9)
         }
         self.temp_if = 0
+
+    def print_code(self):
+        for line in self.code:
+            print(line)
+
+    def write_to_file(self):
+        
+        with open("test/codigoMips/" + self.output_file + ".s", 'w') as file:
+            for i in self.code:
+                file.write(i + "\n")
 
     def generate(self):
 
@@ -22,14 +33,14 @@ class MIPS:
 
         for line in self.codigo_intermedio:
             
-            tempT = []
+            tokens = []
 
             current = ""
             stringFlag = False
 
             for i in line:
                 if i == " " and not stringFlag:
-                    tempT.append(current)
+                    tokens.append(current)
                     current = ""
                 elif i == '"':
                     stringFlag = not stringFlag
@@ -38,52 +49,52 @@ class MIPS:
                     current += i
 
             if current != "":
-                tempT.append(current)
+                tokens.append(current)
 
-            if tempT[0] == "CLASS":
+            if tokens[0] == "CLASS":
                 if actual != None:
                     self.method_table[actual] = method_temp
                     method_temp = []
 
-                actual = tempT[1]
+                actual = tokens[1]
                 hereda = None
 
-                if "INHERITS" in tempT[2]:
-                    if len(tempT[3].split(",")) > 1:
-                        hereda = tempT[3].split(",")[0]
+                if "INHERITS" in tokens[2]:
+                    if len(tokens[3].split(",")) > 1:
+                        hereda = tokens[3].split(",")[0]
                         hereda.replace("'", "")
                         hereda.replace("[", "")
                         hereda.replace("]", "")
                     else:
-                        hereda = tempT[3].replace("'", "")
+                        hereda = tokens[3].replace("'", "")
                         hereda.replace("[", "")
                         hereda.replace("]", "")
 
-
+                    #REVISAR
                     for key, value in self.method_table.items():
                         if key == hereda:
                             for i in self.method_table[key]:
                                 method_temp.append(i)
-            if "FUNCTION" in tempT[0]:
-                actual = tempT[1].split(".")[1]
+            if "FUNCTION" in tokens[0]:
+                actualF = tokens[1].split(".")[1]
                 method_temp_function = []
                 for i in method_temp:
                     newAdd = i.split(".")[1]
-                    method_temp_function.append(i)
+                    method_temp_function.append(newAdd)
 
-                if actual not in method_temp_function:
-                    method_temp.append(tempT[1])
+                if actualF not in method_temp_function:
+                    method_temp.append(tokens[1])
 
                 else:
-                    indexTemp = method_temp_function.index(actual)
-                    method_temp[indexTemp] = tempT[1]
+                    indexTemp = method_temp_function.index(actualF)
+                    method_temp[indexTemp] = tokens[1]
 
         self.method_table[actual] = method_temp
         
         for key, value in self.method_table.items():
-            self.code.append(f"vy_{key}:")
+            self.code.append(f"vt_{key}:")
             for i in value:
-                self.code.append(f"     . word {i}")
+                self.code.append(f"    .word {i}")
 
         for key, value in self.method_table.items():
             for i in range(len(value)):
@@ -100,7 +111,7 @@ class MIPS:
         self.is_first_class = True
 
         # Agregar funciones de básicas
-        self.code.append("\n# ------> FUNCIONES BÁSICAS")
+        self.code.append("\n# ------> FUNCIONES BASICAS")
 
         # out_string
         self.code.append("out_string:")
@@ -149,7 +160,7 @@ class MIPS:
         self.code.append("    j substr_loop")      # Regresar al inicio del ciclo
 
         # substr_end
-        self.code.append("\n# ------> TERMINAR LA FUNCIÓN substr")
+        self.code.append("\n# ------> TERMINAR LA FUNCION substr")
         self.code.append("substr_end:")
         self.code.append("    sb $zero, 0($s6)")          # Agregar el carácter nulo al final de la nueva subcadena
         self.code.append("    move $v0, $t5")             # Mover la dirección de la nueva subcadena al registro $v0
@@ -183,7 +194,7 @@ class MIPS:
         self.code.append("    addi $sp, $sp, 36")   # Incrementar el stack pointer
         self.code.append("    jr $ra\n\n")          # Regresar al caller
 
-        for line in self.intermediate_code:
+        for line in self.codigo_intermedio:
             # Separar la línea en tokens; pero no separar los strings
             tokens = []
 
@@ -199,15 +210,14 @@ class MIPS:
                     current_token += char
                 else:
                     current_token += char
-            if current_token:  # Añadir el último token si no está vacío
+            if current_token:
                 tokens.append(current_token)
 
-            # ----------------- DECLARAR CLASE -----------------
             if "CLASS" in line:
                 
                 self.inside_first_func = True
 
-                if self.first_class:
+                if self.is_first_class:
 
                     clases = ["Object", "IO"]
 
@@ -241,7 +251,7 @@ class MIPS:
                         # Regresar a donde se estaba
                         self.code.append("    jr $ra\n")
 
-                        self.first_class = False
+                        self.is_first_class = False
 
                 if "END" not in tokens[0]:
                     self.class_before_func = True
@@ -273,7 +283,7 @@ class MIPS:
 
                     if "Main" in class_name:
                         self.code.append(f"    move $s7, {reg}")     # Guardar la dirección de la instancia de la clase en $s7
-                        self.class_dec = True
+                        self.declare_class = True
                     else:
                         # mover s7 a s6
                         self.code.append("    move $s6, $s7")          # Cambiar s7 a s6
@@ -289,7 +299,7 @@ class MIPS:
 
                 if "END" in tokens[0]:
                     # Al final de la función
-                    self.code.append(f"\n# ------> FIN DE LA FUNCIÓN {tokens[2]}")
+                    self.code.append(f"\n# ------> FIN DE LA FUNCION {tokens[2]}")
                     self.code.append("    move $sp, $fp")  # Restaurar el stack pointer al frame pointer actual
                     self.code.append("    lw $fp, 0($sp)")  # Restaurar el frame pointer al valor previo
                     self.code.append("    lw $ra, 4($sp)") # Restaurar el return address
@@ -306,11 +316,11 @@ class MIPS:
 
                     self.last_function_size = size
 
-                    if(self.class_dec):
+                    if(self.declare_class):
                         # Pasarle como parámetro la dirección de la clase
                         self.code.append("    jal Main.main\n")
 
-                        self.class_dec = False
+                        self.declare_class = False
                         self.class_before_func = False
 
                         # ------- Agregar Funciones Personalizadas de la Clase --------
@@ -325,7 +335,7 @@ class MIPS:
                     if "Main.main" not in tokens[1]:
                         self.code.append("    move $s1, $a0")
 
-                    self.code.append(f"# ------> INICIALIZAR MEMORIA DE LA FUNCIÓN {tokens[1]}")
+                    self.code.append(f"# ------> INICIALIZAR MEMORIA DE LA FUNCION {tokens[1]}")
                     self.code.append("    addi $sp, $sp, -8")  # Mover el stack pointer para hacer espacio para $fp y $ra
                     self.code.append("    sw $ra, 4($sp)")    # Guardar el return address
                     self.code.append("    sw $fp, 0($sp)")    # Guardar el frame pointer
@@ -1347,15 +1357,15 @@ class MIPS:
         if register in self.temp_usage:
             self.temp_usage[register] = False
 
-    def push_stack(self, register):
-        self.code.append("\n# ---> PUSH STACK")
-        self.code.append(f"    addi $sp, $sp, -4")
-        self.code.append(f"    sw {register}, 0($sp)\n")
+    # def push_stack(self, register):
+    #     self.code.append("\n# ---> PUSH STACK")
+    #     self.code.append(f"    addi $sp, $sp, -4")
+    #     self.code.append(f"    sw {register}, 0($sp)\n")
 
-    def pop_stack(self, register):
-        self.code.append("\n# ---> POP STACK")
-        self.code.append(f"    lw {register}, 0($sp)")
-        self.code.append(f"    addi $sp, $sp, 4\n")
+    # def pop_stack(self, register):
+    #     self.code.append("\n# ---> POP STACK")
+    #     self.code.append(f"    lw {register}, 0($sp)")
+    #     self.code.append(f"    addi $sp, $sp, 4\n")
 
     def heap_allocation(self, size):
         register = self.return_next_register()

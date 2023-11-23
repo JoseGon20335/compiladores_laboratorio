@@ -35,7 +35,7 @@ class codigo_intermedio(grammarYaplVisitor):
                 size = classTemp.byte
 
         if len(inherits_from) > 0:
-            self.emit(f"CLASS {class_name} INHERITS {inherits_from}")
+            self.emit(f"CLASS {class_name} INHERITS {inherits_from} SIZE {size}")
 
         else:
             self.emit(f"CLASS {class_name} SIZE {size}")
@@ -160,319 +160,337 @@ class codigo_intermedio(grammarYaplVisitor):
 
     def visitExpr(self, ctx:grammarYaplParser.ExprContext):
         self.last_node_visited = ctx
+        if hasattr(ctx, 'DOT'):
+            if ctx.DOT():
+                base_expr = None
+                if ctx.expr(0):
+                    base_expr = self.visitExpr(ctx.expr(0))
+                else:
+                    base_expr = self.visitExpr(ctx.expr())
+                print(base_expr)
+                if "new " in base_expr:
+                    temp0 = self.new_temp()
+                    self.emit(f"\t{temp0} = {base_expr}")
+                    base_expr = temp0
 
-        if isinstance(ctx, grammarYaplParser.DispatchContext) and ctx.DOT():
-            base_expr = self.visitExpr(ctx.expr(0))
-            if "new " in base_expr:
-                temp0 = self.new_temp()
-                self.emit(f"\t{temp0} = {base_expr}")
-                base_expr = temp0
+                type_override = None
+                if ctx.AT():
+                    third_child = ctx.children[2]
+                    if third_child.getSymbol().type == self.symbolic_names.index("TYPE_ID"):
+                        type_override = third_child.getText()
+                
+                method_name = ctx.OBJECT_ID().getText()
 
-            type_override = None
-            if ctx.AT():
-                third_child = ctx.children[2]
-                if third_child.getSymbol().type == self.symbolic_names.index("TYPE_ID"):
-                    type_override = third_child.getText()
-            
-            method_name = ctx.OBJECT_ID().getText()
+                if method_name == "type_name":
+                    type_element = self.nodes_types[ctx.expr()]
 
-            if method_name == "type_name":
-                type_element = self.nodes_types[ctx.expr()]
+                    if "Int" in type_element or "String" in type_element or "Bool" in type_element:
+                        temp = self.new_temp()
+                        self.emit(f"\t{temp} = '{type_element}'")
+                        return temp
 
-                if "Int" in type_element or "String" in type_element or "Bool" in type_element:
+                arguments = [self.visitExpr(e) for e in ctx.expr()[1:]]
+                
+                temp = self.new_temp()
+                if type_override:
+                    self.emit(f"\t{temp} = CALL {base_expr}@{type_override}.{method_name}({','.join(arg for arg in arguments)})")
+                else:
+                    self.emit(f"\t{temp} = CALL {base_expr}.{method_name}({','.join(arg for arg in arguments)})")
+                
+                return temp
+        elif hasattr(ctx, 'OBJECT_ID') and hasattr(ctx, 'LPAREN'):
+            if ctx.OBJECT_ID() and ctx.LPAREN():
+                method_name = ctx.OBJECT_ID().getText()
+                
+                arguments = [self.visitExpr(e) for e in ctx.expr()]
+                
+                class_name = self.buscar_clase(ctx)
+
+                if "new " in class_name:
                     temp = self.new_temp()
-                    self.emit(f"\t{temp} = '{type_element}'")
+                    self.emit(f"\t{temp} = {class_name}")
+
+                    temp2 = self.new_temp()
+                    self.emit(f"\t{temp2} = CALL {temp}.{method_name}({', '.join(str(arg) for arg in arguments)})")
+            
+                    return temp2
+                
+                else:
+                    temp = self.new_temp()
+                    self.emit(f"\t{temp} = CALL {class_name}.{method_name}({', '.join(str(arg) for arg in arguments)})")
+            
                     return temp
 
-            arguments = [self.visitExpr(e) for e in ctx.expr()[1:]]
-            
-            temp = self.new_temp()
-            if type_override:
-                self.emit(f"\t{temp} = CALL {base_expr}@{type_override}.{method_name}({','.join(arg for arg in arguments)})")
-            else:
-                self.emit(f"\t{temp} = CALL {base_expr}.{method_name}({','.join(arg for arg in arguments)})")
-            
-            return temp
-        
-        elif isinstance(ctx, grammarYaplParser.Static_dispatchContext) and ctx.OBJECT_ID() and ctx.LPAREN():
-            method_name = ctx.OBJECT_ID().getText()
-            
-            arguments = [self.visitExpr(e) for e in ctx.expr()]
-            
-            class_name = self.buscar_clase(ctx)
+        elif hasattr(ctx, 'IF'):
+            if ctx.IF():
+                condicion = ctx.expr()
+                rama_then = ctx.expr(1)
+                rama_else = ctx.expr(2)
 
-            if "new " in class_name:
-                temp = self.new_temp()
-                self.emit(f"\t{temp} = {class_name}")
+                condition_temp = self.visitExpr(condicion)
+                
+                label_then = self.new_label()
+                label_else = self.new_label()
+                label_continue = self.new_label()
 
-                temp2 = self.new_temp()
-                self.emit(f"\t{temp2} = CALL {temp}.{method_name}({', '.join(str(arg) for arg in arguments)})")
+                temp_return = self.new_temp()
+                self.emit(f"\tIF {condition_temp} GOTO {label_then}")
+                self.emit(f"\tGOTO {label_else}")
+                self.emit(f"LABEL {label_then}")
+
+                result_then = self.visitExpr(rama_then)
+                self.emit(f"\t{temp_return} = {result_then}")
+                self.emit(f"\tGOTO {label_continue}")
+                self.emit(f"LABEL {label_else}")
+
+                result_else = self.visitExpr(rama_else)
+                self.emit(f"\t{temp_return} = {result_else}")
+                self.emit(f"LABEL {label_continue} \n")
+
+                return temp_return
+        elif hasattr(ctx, 'WHILE'):
+            if ctx.WHILE():
+                label_start = self.new_label()
+                label_loop = self.new_label()
+                label_end = self.new_label()
+                self.emit(f"LABEL {label_start}")
+                condition_temp = self.visitExpr(ctx.expr())
+
+                if condition_temp is None:
+                    a = 5
+                self.emit(f"\tIF NOT {condition_temp} GOTO {label_end}")
+                self.emit(f"\tGOTO {label_loop}")
+                self.emit(f"LABEL {label_loop}")
+                self.visitExpr(ctx.expr(1))
+                self.emit(f"\tGOTO {label_start}")
+                self.emit(f"LABEL {label_end} \n")
+
+                return "Object"
+        elif hasattr(ctx, 'LBRACE'):
+            if ctx.LBRACE():
+                result = None
+                for expr_ctx in ctx.expr():
+                    result = self.visitExpr(expr_ctx)
+                return result
+
+        elif hasattr(ctx, 'LET'):
+            if ctx.LET():
+                i = 0
+
+                while True:
+                    hijo_actual = ctx.children[i]
+
+                    if hijo_actual.getText() == "IN" or hijo_actual.getText() == "in" or hijo_actual.getText() == "In" or hijo_actual.getText() == "iN":
+                        result = self.visitExpr(ctx.expr()[-1])
+                        return result
+
+                    elif hijo_actual.getSymbol().type == self.symbolic_names.index("OBJECT_ID"):
+                        hijo_actual_plus_1 = ctx.children[i + 1]
+                        variable_name = hijo_actual.getText()
+
+                        if hijo_actual_plus_1.getSymbol().type == self.symbolic_names.index("COLON"):
+                            hijo_actual_plus_2 = ctx.children[i + 2]
+
+                            if hijo_actual_plus_2.getSymbol().type == self.symbolic_names.index("TYPE_ID"):
+                                hijo_actual_plus_3 = ctx.children[i + 3]
+
+                                if hijo_actual_plus_3.getSymbol().type == self.symbolic_names.index("ASSIGN"):
+                                    hijo_actual_plus_4 = ctx.children[i + 4]
+                                    var_value = self.visitExpr(hijo_actual_plus_4)
+
+                                    class_name = self.buscar_clase(ctx)
+                                    function_name = self.buscar_funcion(ctx)
+                                    table_class = None
+                                    table_function = None
+
+                                    for table in self.symbol_tables.records:
+                                        table_temp = self.symbol_tables.records[table]
+                                        if table_temp.id == class_name:
+                                            table_class = self.symbol_tables.records[table]
+
+                                        table_temp = self.symbol_tables.records[table]
+                                        if table_temp.id == function_name:
+                                            table_function = self.symbol_tables.records[table]
+                                            break
+                                    if table_class is not None:
+                                        if table_class.id == variable_name:
+                                            offset = table_class.offset
+                                            self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
+                                    if table_function is not None:
+                                        if table_function.id == variable_name:
+                                            offset = table_function.offset
+                                            self.emit(f"\tsp[{offset}] = {var_value}")
+
+                                    hijo_actual_plus_5 = ctx.children[i + 5]
+                                    if hijo_actual_plus_5.getSymbol().type == self.symbolic_names.index("COMMA"):
+                                        i += 6
+                                    else:
+                                        i += 5
+                                else:
+                                    if hijo_actual_plus_3.getSymbol().type == self.symbolic_names.index("COMMA"):
+                                        i += 4
+                                    else:
+                                        i += 3
+                    else:
+                        i += 1
         
-                return temp2
-            
-            else:
+        elif hasattr(ctx, 'NEW'):
+            if ctx.NEW():
                 temp = self.new_temp()
-                self.emit(f"\t{temp} = CALL {class_name}.{method_name}({', '.join(str(arg) for arg in arguments)})")
-        
+                clase = ctx.children[1].getText()
+                self.emit(f"\t{temp} = new {clase}")
                 return temp
 
-        elif isinstance(ctx, grammarYaplParser.IfContext) and ctx.IF():
-            condicion = ctx.expr()
-            rama_then = ctx.expr(1)
-            rama_else = ctx.expr(2)
-
-            condition_temp = self.visitExpr(condicion)
-            
-            label_then = self.new_label()
-            label_else = self.new_label()
-            label_continue = self.new_label()
-
-            temp_return = self.new_temp()
-            self.emit(f"\tIF {condition_temp} GOTO {label_then}")
-            self.emit(f"\tGOTO {label_else}")
-            self.emit(f"LABEL {label_then}")
-
-            result_then = self.visitExpr(rama_then)
-            self.emit(f"\t{temp_return} = {result_then}")
-            self.emit(f"\tGOTO {label_continue}")
-            self.emit(f"LABEL {label_else}")
-
-            result_else = self.visitExpr(rama_else)
-            self.emit(f"\t{temp_return} = {result_else}")
-            self.emit(f"LABEL {label_continue} \n")
-
-            return temp_return
+        elif hasattr(ctx, 'NEG'):
+            if ctx.NEG():
+                operand = self.visitExpr(ctx.expr())
+                temp = self.new_temp()
+                self.emit(f"\t{temp} = NEG {operand}")
+                return temp
         
-        elif isinstance(ctx, grammarYaplParser.WhileContext) and ctx.WHILE():
-            label_start = self.new_label()
-            label_loop = self.new_label()
-            label_end = self.new_label()
-            self.emit(f"LABEL {label_start}")
-            condition_temp = self.visitExpr(ctx.expr())
+        elif hasattr(ctx, 'ISVOID'):
+            if ctx.ISVOID():
+                operand = self.visitExpr(ctx.expr())
+                temp = self.new_temp()
+                self.emit(f"\t{temp} = isvoid {operand}")
+                return temp
 
-            if condition_temp is None:
-                a = 5
-            self.emit(f"\tIF NOT {condition_temp} GOTO {label_end}")
-            self.emit(f"\tGOTO {label_loop}")
-            self.emit(f"LABEL {label_loop}")
-            self.visitExpr(ctx.expr(1))
-            self.emit(f"\tGOTO {label_start}")
-            self.emit(f"LABEL {label_end} \n")
-
-            return "Object"
-        
-        elif isinstance(ctx, grammarYaplParser.BlockContext) and ctx.LBRACE():
-            result = None
-            for expr_ctx in ctx.expr():
-                result = self.visitExpr(expr_ctx)
-            return result
-
-        elif isinstance(ctx, grammarYaplParser.LetContext) and ctx.LET():
-            i = 0
-
-            while True:
-                hijo_actual = ctx.children[i]
-
-                if hijo_actual.getText() == "IN" or hijo_actual.getText() == "in" or hijo_actual.getText() == "In" or hijo_actual.getText() == "iN":
-                    result = self.visitExpr(ctx.expr()[-1])
-                    return result
-
-                elif hijo_actual.getSymbol().type == self.symbolic_names.index("OBJECT_ID"):
-                    hijo_actual_plus_1 = ctx.children[i + 1]
-                    variable_name = hijo_actual.getText()
-
-                    if hijo_actual_plus_1.getSymbol().type == self.symbolic_names.index("COLON"):
-                        hijo_actual_plus_2 = ctx.children[i + 2]
-
-                        if hijo_actual_plus_2.getSymbol().type == self.symbolic_names.index("TYPE_ID"):
-                            hijo_actual_plus_3 = ctx.children[i + 3]
-
-                            if hijo_actual_plus_3.getSymbol().type == self.symbolic_names.index("ASSIGN"):
-                                hijo_actual_plus_4 = ctx.children[i + 4]
-                                var_value = self.visitExpr(hijo_actual_plus_4)
-
-                                class_name = self.buscar_clase(ctx)
-                                function_name = self.buscar_funcion(ctx)
-                                table_class = None
-                                table_function = None
-
-                                for table in self.symbol_tables.records:
-                                    table_temp = self.symbol_tables.records[table]
-                                    if table_temp.id == class_name:
-                                        table_class = self.symbol_tables.records[table]
-
-                                    table_temp = self.symbol_tables.records[table]
-                                    if table_temp.id == function_name:
-                                        table_function = self.symbol_tables.records[table]
-                                        break
-                                if table_class is not None:
-                                    if table_class.id == variable_name:
-                                        offset = table_class.offset
-                                        self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
-                                if table_function is not None:
-                                    if table_function.id == variable_name:
-                                        offset = table_function.offset
-                                        self.emit(f"\tsp[{offset}] = {var_value}")
-
-                                hijo_actual_plus_5 = ctx.children[i + 5]
-                                if hijo_actual_plus_5.getSymbol().type == self.symbolic_names.index("COMMA"):
-                                    i += 6
-                                else:
-                                    i += 5
-                            else:
-                                if hijo_actual_plus_3.getSymbol().type == self.symbolic_names.index("COMMA"):
-                                    i += 4
-                                else:
-                                    i += 3
-                else:
-                    i += 1
-        
-        elif isinstance(ctx, grammarYaplParser.NewContext) and ctx.NEW():
-            temp = self.new_temp()
-            clase = ctx.children[1].getText()
-            self.emit(f"\t{temp} = new {clase}")
-            return temp
-
-        
-        elif isinstance(ctx, grammarYaplParser.NegContext) and ctx.NEG():
-            operand = self.visitExpr(ctx.expr())
-            temp = self.new_temp()
-            self.emit(f"\t{temp} = NEG {operand}")
-            return temp
-        
-        elif isinstance(ctx, grammarYaplParser.IsvoidContext) and ctx.ISVOID():
-            operand = self.visitExpr(ctx.expr())
-            temp = self.new_temp()
-            self.emit(f"\t{temp} = isvoid {operand}")
-            return temp
-
-        
-        elif isinstance(ctx, grammarYaplParser.MulDivContext):
-            left_operand = self.visitExpr(ctx.expr())
-            right_operand = self.visitExpr(ctx.expr(1))
-            temp = self.new_temp()
-            if ctx.MULT():  
-                self.emit(f"\t{temp} = {left_operand} * {right_operand}")
-            elif ctx.DIV():  
-                self.emit(f"\t{temp} = {left_operand} / {right_operand}")
-            return temp
-
-        elif isinstance(ctx, grammarYaplParser.AddSubContext):
-            left_operand = self.visitExpr(ctx.expr())
-            right_operand = self.visitExpr(ctx.expr(1))
-            temp = self.new_temp()
-            if ctx.PLUS():
-                self.emit(f"\t{temp} = {left_operand} + {right_operand}")
-            elif ctx.MINUS():
-                self.emit(f"\t{temp} = {left_operand} - {right_operand}")
-            return temp
-
-        elif isinstance(ctx, grammarYaplParser.MinusContext):
-            operand = self.visitExpr(ctx.expr())
-            temp = self.new_temp()
-            self.emit(f"\t{temp} = - {operand}")
-            return temp
-
-        elif isinstance(ctx, grammarYaplParser.ComparisonContext):
-            left_operand = self.visitExpr(ctx.expr())
-            right_operand = self.visitExpr(ctx.expr(1))
-            temp = self.new_temp()
-            if ctx.EQ():
+        elif hasattr(ctx, 'MULT') or hasattr(ctx, 'DIV'):
+            if ctx.MULT() or ctx.DIV():
                 left_operand = self.visitExpr(ctx.expr())
                 right_operand = self.visitExpr(ctx.expr(1))
                 temp = self.new_temp()
-                self.emit(f"\t{temp} = {left_operand} == {right_operand}")
-            elif ctx.LE():
-                self.emit(f"\t{temp} = {left_operand} <= {right_operand}")
-            elif ctx.LT():  
-                self.emit(f"\t{temp} = {left_operand} < {right_operand}")
-            return temp
-                
-        elif isinstance(ctx, grammarYaplParser.NotContext) and ctx.NOT():
-            operand = self.visitExpr(ctx.expr())
-            temp = self.new_temp()
-            self.emit(f"\t{temp} = NOT {operand}")
-            return temp
+                if ctx.MULT():  
+                    self.emit(f"\t{temp} = {left_operand} * {right_operand}")
+                elif ctx.DIV():  
+                    self.emit(f"\t{temp} = {left_operand} / {right_operand}")
+                return temp
+
+        elif hasattr(ctx, 'PLUS') and hasattr(ctx, 'MINUS'):
+            if ctx.PLUS() or ctx.MINUS():
+                left_operand = self.visitExpr(ctx.expr())
+                right_operand = self.visitExpr(ctx.expr(1))
+                temp = self.new_temp()
+                if ctx.PLUS():
+                    self.emit(f"\t{temp} = {left_operand} + {right_operand}")
+                elif ctx.MINUS():
+                    self.emit(f"\t{temp} = {left_operand} - {right_operand}")
+                return temp
+
+        # elif isinstance(ctx, grammarYaplParser.MinusContext):
+        #     operand = self.visitExpr(ctx.expr())
+        #     temp = self.new_temp()
+        #     self.emit(f"\t{temp} = - {operand}")
+        #     return temp
+
+        elif hasattr(ctx, 'EQ') or hasattr(ctx, 'LE') or hasattr(ctx, 'LT'):
+            if ctx.EQ() or ctx.LE() or ctx.LT():
+                left_operand = self.visitExpr(ctx.expr())
+                right_operand = self.visitExpr(ctx.expr(1))
+                temp = self.new_temp()
+                if ctx.EQ():
+                    left_operand = self.visitExpr(ctx.expr())
+                    right_operand = self.visitExpr(ctx.expr(1))
+                    temp = self.new_temp()
+                    self.emit(f"\t{temp} = {left_operand} == {right_operand}")
+                elif ctx.LE():
+                    self.emit(f"\t{temp} = {left_operand} <= {right_operand}")
+                elif ctx.LT():  
+                    self.emit(f"\t{temp} = {left_operand} < {right_operand}")
+                return temp
+
+        elif hasattr(ctx, 'NOT'):      
+            if ctx.NOT():
+                operand = self.visitExpr(ctx.expr())
+                temp = self.new_temp()
+                self.emit(f"\t{temp} = NOT {operand}")
+                return temp
         
-        elif isinstance(ctx, grammarYaplParser.AssignContext) and ctx.ASSIGN():
-            variable_name = ctx.OBJECT_ID().getText()
-            var_value = self.visit(ctx.expr())
+        elif hasattr(ctx, 'ASSIGN'):
+            if ctx.ASSIGN():
+                variable_name = ctx.OBJECT_ID().getText()
+                var_value = self.visit(ctx.expr())
 
-            class_name = self.buscar_clase(ctx)
-            function_name = self.buscar_funcion(ctx)
-            table_class = None
-            table_function = None
+                class_name = self.buscar_clase(ctx)
+                function_name = self.buscar_funcion(ctx)
+                table_class = None
+                table_function = None
 
-            for table in self.symbol_tables.records:
-                table_temp = self.symbol_tables.records[table]
-                if table_temp.id == class_name:
-                    table_class = self.symbol_tables.records[table]
+                for table in self.symbol_tables.records:
+                    table_temp = self.symbol_tables.records[table]
+                    if table_temp.id == class_name:
+                        table_class = self.symbol_tables.records[table]
 
-                table_temp = self.symbol_tables.records[table]
-                if table_temp.id == function_name and table_class is not None:
-                    table_function = self.symbol_tables.records[table]
-                    break
-                    
-            if table_class is not None:
-                if table_class.id == variable_name:
-                    offset = table_class.offset
-                    self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
-                    return f"sp_GLOBAL[{offset}]"
-
-            if table_function is not None:
-                if table_class.id == variable_name:
-                    offset = table_class.offset
-                    self.emit(f"\tsp[{offset}] = {var_value}")
-                    return f"sp[{offset}]"
-        
-        elif isinstance(ctx, grammarYaplParser.ParenthesisContext) and ctx.LPAREN():
-            return self.visit(ctx.expr())
-
-        elif isinstance(ctx, grammarYaplParser.Object_idContext) and ctx.OBJECT_ID():
-            variable_name = ctx.OBJECT_ID().getText()
-
-            class_name = self.buscar_clase(ctx)
-            function_name = self.buscar_funcion(ctx)
-            table_class = None
-            table_function = None
-
-            for table in self.symbol_tables.records:
-                table_temp = self.symbol_tables.records[table]
-                if table_temp.id == class_name:
-                    table_class = self.symbol_tables.records[table]
-                table_temp = self.symbol_tables.records[table]
-                if table_temp.id == class_name and table_class is not None:
-                    table_function = self.symbol_tables.records[table]
-                    break
-
-            if table_class is not None:
-                if table_class.id == variable_name:
-                    offset = table_class.offset
-                    return f"sp_GLOBAL[{offset}]"
-
-            if table_function is not None:
-                if table_function.id == variable_name:
-                    offset = table_class.offset
-                    return f"sp[{offset}]"
+                    table_temp = self.symbol_tables.records[table]
+                    if table_temp.id == function_name and table_class is not None:
+                        table_function = self.symbol_tables.records[table]
+                        break
                         
-            if "num" in variable_name:
-                return variable_name
+                if table_class is not None:
+                    if table_class.id == variable_name:
+                        offset = table_class.offset
+                        self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
+                        return f"sp_GLOBAL[{offset}]"
 
-            temp = self.new_temp()
-            self.emit(f"\t{temp} = {variable_name}")
-            return temp
+                if table_function is not None:
+                    if table_class.id == variable_name:
+                        offset = table_class.offset
+                        self.emit(f"\tsp[{offset}] = {var_value}")
+                        return f"sp[{offset}]"
         
-        elif isinstance(ctx, grammarYaplParser.IntegerContext) and ctx.INTEGER():
-            return ctx.INTEGER().getText()
+        elif hasattr(ctx, 'LPAREN'):
+            if ctx.LPAREN():
+                return self.visit(ctx.expr())
+
+        elif hasattr(ctx, 'OBJECT_ID'):
+            if ctx.OBJECT_ID():
+                variable_name = ctx.OBJECT_ID().getText()
+
+                class_name = self.buscar_clase(ctx)
+                function_name = self.buscar_funcion(ctx)
+                table_class = None
+                table_function = None
+
+                for table in self.symbol_tables.records:
+                    table_temp = self.symbol_tables.records[table]
+                    if table_temp.id == class_name:
+                        table_class = self.symbol_tables.records[table]
+                    table_temp = self.symbol_tables.records[table]
+                    if table_temp.id == class_name and table_class is not None:
+                        table_function = self.symbol_tables.records[table]
+                        break
+
+                if table_class is not None:
+                    if table_class.id == variable_name:
+                        offset = table_class.offset
+                        return f"sp_GLOBAL[{offset}]"
+
+                if table_function is not None:
+                    if table_function.id == variable_name:
+                        offset = table_class.offset
+                        return f"sp[{offset}]"
+                            
+                if "num" in variable_name:
+                    return variable_name
+
+                temp = self.new_temp()
+                self.emit(f"\t{temp} = {variable_name}")
+                return temp
         
-        elif isinstance(ctx, grammarYaplParser.StringContext) and ctx.STRING():
-            return ctx.STRING().getText()
+        elif hasattr(ctx, 'INTEGER'):
+            if ctx.INTEGER():
+                return ctx.INTEGER().getText()
         
-        elif isinstance(ctx, grammarYaplParser.BoolContext):
-            if ctx.TRUE():
-                return ctx.TRUE().getText()
-            elif ctx.FALSE():
-                return ctx.FALSE().getText()
+        elif hasattr(ctx, 'STRING'):
+            if ctx.STRING():
+                return ctx.STRING().getText()
+        
+        elif hasattr(ctx, 'TRUE') and hasattr(ctx, 'FALSE'):
+            if ctx.TRUE() or ctx.FALSE():
+                if ctx.TRUE():
+                    return ctx.TRUE().getText()
+                elif ctx.FALSE():
+                    return ctx.FALSE().getText()
          
     def new_temp(self):
         self.temp_counter += 1
