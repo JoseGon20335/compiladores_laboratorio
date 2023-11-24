@@ -12,7 +12,7 @@ class Main {
 
   main() : Object {	-- main() is an atrophied method so we can parse. 
      {
-      while true loop 
+      while testee <= stop loop 
       {
 
         testee <- testee + 1;
@@ -39,11 +39,6 @@ class Main {
         else	-- the loop halted on testee/divisor = 0, testee isn't prime.
           0	-- testee isn't prime, do nothing.
 	fi;   	
-        if stop <= testee then 
-          "halt"	-- we could think of "halt" as SIGTERM.
-        else 
-          "continue"
-        fi;       
 
       } 
     pool;

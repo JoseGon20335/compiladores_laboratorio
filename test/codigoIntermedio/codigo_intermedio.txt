@@ -1,78 +1,84 @@
-CLASS Main SIZE 152
-	REGISTRO[0] = CALL Main.out_string("2 is trivially prime.\n")
-	sp_GLOBAL[8] = 2
-	sp_GLOBAL[144] = sp_GLOBAL[8]
-	sp_GLOBAL[152] = 500
+CLASS Factorial SIZE 8
+	sp_GLOBAL[0] = 0
 
-FUNCTION Main.main SIZE 8
-LABEL label1
-	IF NOT true GOTO label3
+FUNCTION Factorial.factorial SIZE 4
+	sp[0] = Int.PARAM_0
+	REGISTRO[0] = sp[4] == 0
+	IF REGISTRO[0] GOTO label1
 	GOTO label2
+LABEL label1
+	REGISTRO[4] = None
+	GOTO label3
 LABEL label2
-	REGISTRO[0] = sp_GLOBAL[144] + 1
-	sp_GLOBAL[144] = REGISTRO[0]
-	sp_GLOBAL[148] = 2
-LABEL label4
-	REGISTRO[4] = sp_GLOBAL[148] * sp_GLOBAL[148]
-	REGISTRO[0] = sp_GLOBAL[144] < REGISTRO[4]
-	IF REGISTRO[0] GOTO label7
-	GOTO label8
-LABEL label7
-	REGISTRO[4] = false
-	GOTO label9
-LABEL label8
-	REGISTRO[0] = sp_GLOBAL[144] / sp_GLOBAL[148]
-	REGISTRO[8] = sp_GLOBAL[148] * REGISTRO[0]
-	REGISTRO[0] = sp_GLOBAL[144] - REGISTRO[8]
-	REGISTRO[8] = REGISTRO[0] == 0
-	IF REGISTRO[8] GOTO label10
-	GOTO label11
-LABEL label10
-	REGISTRO[0] = false
-	GOTO label12
-LABEL label11
-	REGISTRO[0] = true
-LABEL label12 
-
-	REGISTRO[4] = REGISTRO[0]
-LABEL label9 
-
-	IF NOT REGISTRO[4] GOTO label6
+	REGISTRO[0] = sp[4] == 1
+	IF REGISTRO[0] GOTO label4
 	GOTO label5
+LABEL label4
+	REGISTRO[8] = None
+	GOTO label6
 LABEL label5
-	REGISTRO[0] = sp_GLOBAL[148] + 1
-	sp_GLOBAL[148] = REGISTRO[0]
-	GOTO label4
+	REGISTRO[0] = sp[4] - 1
+	REGISTRO[12] = CALL Factorial.factorial(REGISTRO[0])
+	REGISTRO[0] = sp[4] * REGISTRO[12]
+	REGISTRO[8] = None
 LABEL label6 
 
-	REGISTRO[4] = sp_GLOBAL[148] * sp_GLOBAL[148]
-	REGISTRO[0] = sp_GLOBAL[144] < REGISTRO[4]
-	IF REGISTRO[0] GOTO label13
-	GOTO label14
-LABEL label13
-	sp_GLOBAL[8] = sp_GLOBAL[144]
-	REGISTRO[4] = CALL Main.out_int(sp_GLOBAL[8])
-	REGISTRO[0] = CALL Main.out_string(" is prime.\n")
-	REGISTRO[4] = REGISTRO[0]
-	GOTO label15
-LABEL label14
-	REGISTRO[4] = 0
-LABEL label15 
-
-	REGISTRO[0] = sp_GLOBAL[152] <= sp_GLOBAL[144]
-	IF REGISTRO[0] GOTO label16
-	GOTO label17
-LABEL label16
-	REGISTRO[4] = "halt"
-	GOTO label18
-LABEL label17
-	REGISTRO[4] = "continue"
-LABEL label18 
-
-	GOTO label1
+	REGISTRO[4] = REGISTRO[8]
 LABEL label3 
 
-	RETURN Object
+	REGISTRO[0] = f
+	RETURN REGISTRO[0]
+END FUNCTION Factorial.factorial
+END CLASS Factorial
+
+CLASS Fibonacci SIZE 8
+	sp_GLOBAL[0] = 0
+
+FUNCTION Fibonacci.fibonacci SIZE 4
+	sp[0] = Int.PARAM_0
+	REGISTRO[4] = sp[4] == 0
+	IF REGISTRO[4] GOTO label7
+	GOTO label8
+LABEL label7
+	REGISTRO[0] = None
+	GOTO label9
+LABEL label8
+	REGISTRO[4] = sp[4] == 1
+	IF REGISTRO[4] GOTO label10
+	GOTO label11
+LABEL label10
+	REGISTRO[8] = None
+	GOTO label12
+LABEL label11
+	REGISTRO[4] = sp[4] - 1
+	REGISTRO[12] = CALL Fibonacci.fibonacci(REGISTRO[4])
+	REGISTRO[4] = sp[4] - 2
+	REGISTRO[16] = CALL Fibonacci.fibonacci(REGISTRO[4])
+	REGISTRO[4] = REGISTRO[12] + REGISTRO[16]
+	REGISTRO[8] = None
+LABEL label12 
+
+	REGISTRO[0] = REGISTRO[8]
+LABEL label9 
+
+	REGISTRO[0] = f
+	RETURN REGISTRO[0]
+END FUNCTION Fibonacci.fibonacci
+END CLASS Fibonacci
+
+CLASS Main INHERITS ['IO'] SIZE 24
+	sp_GLOBAL[0] = 10
+
+FUNCTION Main.main SIZE 8
+	sp_GLOBAL[8] = new Factorial
+	REGISTRO[4] = CALL sp_GLOBAL[8].factorial(sp_GLOBAL[0])
+	REGISTRO[0] = CALL Main.out_int(REGISTRO[4])
+	REGISTRO[0] = CALL Main.out_string("\n------\n")
+	sp_GLOBAL[16] = new Fibonacci
+	REGISTRO[0] = CALL sp_GLOBAL[16].fibonacci(sp_GLOBAL[0])
+	REGISTRO[4] = CALL Main.out_int(REGISTRO[0])
+	REGISTRO[0] = self
+	RETURN REGISTRO[0]
 END FUNCTION Main.main
 END CLASS Main
 

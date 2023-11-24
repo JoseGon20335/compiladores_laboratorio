@@ -4,6 +4,7 @@ from symbol_table import symbol_table, symbol
 from antlr_build.grammarYaplVisitor import grammarYaplVisitor
 from antlr_build.grammarYaplParser import grammarYaplParser
 from prettytable import PrettyTable
+import re
 
 class visitor_yapl(grammarYaplVisitor):
 
@@ -30,7 +31,9 @@ class visitor_yapl(grammarYaplVisitor):
             for method in self.defaultMethods[value]:
                 newSymbol = symbol(method, self.defaultMethods[value][method][1], ctx.start.line, value)
                 newSymbol.defineAsFunction = True
+                newSymbol.paramsName = [self.defaultMethods[value][method][1]]
                 self.symbol_table.add(method, newSymbol, None, self.defaultMethods[value][method][0], None, None)
+                
                 print("CLASS " + method)
 
         reservados = ["Int", "Bool", "String", "IO", "Object"]
@@ -57,10 +60,14 @@ class visitor_yapl(grammarYaplVisitor):
                         line = j.start.line
 
                         inputTypes = []
+                        inputNames = []
                         for k in j.formal():
                             inputTypes.append(k.TYPE_ID().symbol.text)
+                            inputNames.append(k.OBJECT_ID().symbol.text)
 
                         newSymbol = symbol(currentSymbol, type, line, tempScope)
+                        newSymbol.defineAsFunction = True
+                        newSymbol.paramsName = inputNames
                         self.symbol_table.add(currentSymbol, newSymbol, None, inputTypes, -1, None)
                         print("Program class child: " + currentSymbol)
 
@@ -76,6 +83,8 @@ class visitor_yapl(grammarYaplVisitor):
                         newSymbol = symbol(j.id, j.type, j.line, i.TYPE_ID(0).getText())
                         newSymbol.defineAsFunction = j.defineAsFunction
                         params = self.symbol_table.getParams(j.id)
+                        paramsNameT = self.symbol_table.getParamsNames(j.id)
+                        newSymbol.paramsName = paramsNameT
                         self.symbol_table.add(j.id, newSymbol, None, params, -1, None)
                         print("Program inherits: " + j.id)
 
@@ -114,6 +123,8 @@ class visitor_yapl(grammarYaplVisitor):
                 newSymbol.params = value.params
                 newSymbol.byte = value.byte
                 newSymbol.offset = value.offset
+                newSymbol.defineAsFunction = value.defineAsFunction
+                newSymbol.paramsName = value.paramsName
 
                 new_symbol_table.add(value.id, newSymbol, value.inherit, value.params, value.byte, value.offset)
 
@@ -146,6 +157,8 @@ class visitor_yapl(grammarYaplVisitor):
 
     def defineFixable(self, nameType):
         scopes = self.symbol_table.getAllInScope(nameType.id)
+        # newScopesVal = self.leftOvers(scopes)
+        # scopes += newScopesVal
         sizeOrNone = self.getSizeOrNone(nameType.id)
         if nameType.type == "class" and sizeOrNone != None:
             nameType.byte = sizeOrNone
@@ -170,7 +183,6 @@ class visitor_yapl(grammarYaplVisitor):
                         temp.byte = self.defineSize(temp.type)
                         nameType.byte += temp.byte
 
-                
     def defineSize(self, temp):
         sizeOrNone = self.getSizeOrNone(temp)
         if sizeOrNone != None:
@@ -250,6 +262,7 @@ class visitor_yapl(grammarYaplVisitor):
                     print("Class " + self.scope + " inherits method " + method.id)
                     newSymbol = symbol(method.id, method.type, method.line, self.scope)
                     newSymbol.defineAsFunction = method.defineAsFunction
+                    newSymbol.paramsName = method.paramsName
                     self.symbol_table.add(method.id, newSymbol, None, method.params, method.byte, None)
                     print("Class " + method.id)
 
@@ -277,6 +290,7 @@ class visitor_yapl(grammarYaplVisitor):
 
         newSymbol = symbol(currentSymbol, data_type, line, self.scope)
         newSymbol.defineAsFunction = True
+        newSymbol.paramsName = params
         self.symbol_table.add(currentSymbol, newSymbol, None, types, -1, None)
         print("Method: " + currentSymbol)
         self.scope = tempScope
@@ -657,11 +671,14 @@ class visitor_yapl(grammarYaplVisitor):
 
         if type != None:
             isFuncType = type.defineAsFunction
+            theParamsName = type.paramsName
+            theParams = type.params
             type = type.type
             print("Parenthesis: Symbol found " + ctx.expr().getText())
             newSymbol = symbol(name, type, ctx.start.line, self.scope)
             newSymbol.defineAsFunction = isFuncType
-            self.symbol_table.add(name, newSymbol, None, None, -1, None)
+            newSymbol.paramsName = theParamsName
+            self.symbol_table.add(name, newSymbol, None, theParams, -1, None)
             print("Parenthesis ", name)
         else:
             print("Parenthesis: Symbol not found " + name)

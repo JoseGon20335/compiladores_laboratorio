@@ -19,6 +19,23 @@ class symbol_table():
     def addChildScope(self, scope, child):
         if child not in self.scopes[scope]:
             self.scopes[scope][child] = {}"""
+    
+        
+    def getSizeOrNoneSymbol(self, nameType):
+        if nameType == "Int":
+            return 4
+        elif nameType == "String":
+            return 128
+        elif nameType == "Bool":
+            return 1
+        elif nameType == "SELF_TYPE":
+            return 8
+        elif nameType == "Object":
+            return 8
+        elif nameType == "IO":
+            return 14
+        else:
+            return None
 
     def add(self, id, symbol, inherit, params, byte, offset):
         if inherit is not None:
@@ -50,6 +67,13 @@ class symbol_table():
             keySplit = key.split('.')
             if keySplit[len(keySplit)-1] == id:
                 return self.records[key].params
+        return False
+    
+    def getParamsNames(self, id):
+        for key in self.records:
+            keySplit = key.split('.')
+            if keySplit[len(keySplit)-1] == id:
+                return self.records[key].paramsName
         return False
     
     def addError(self, error):
@@ -142,6 +166,7 @@ class symbol():
         self.scope = scope
         self.inherit = []
         self.params = []
+        self.paramsName = []
         self.byte = -1
         self.offset = 0
         self.defineAsFunction = False

@@ -681,11 +681,11 @@ class MIPS:
                     if "sp_GLOBAL" in class_calling or "sp" in class_calling or "REGISTRO" in class_calling:
                         class_calling = self.global_vars[tokens[3].split('.')[0]]
 
-                        result_type = self.function_return_type(class_calling, function_name)
+                        result_type = self.function_type(class_calling, function_name)
                         self.global_vars[tokens[0].replace("\t", "")] = result_type
 
                     else:
-                        result_type = self.function_return_type(class_calling, function_name)
+                        result_type = self.function_type(class_calling, function_name)
                         self.global_vars[tokens[0].replace("\t", "")] = result_type
 
                     
@@ -1339,9 +1339,12 @@ class MIPS:
 
     def function_type(self, classTemp, functionTemp):
         name = classTemp + "." + functionTemp
-        for key, table in self.symbol_table.records:
-            if key == name:
-                return table.type 
+        for i in self.symbol_table.records:
+            table = self.symbol_table.records[i]
+            if i == name:
+                # if len(table.params) >= 1:
+                #     return 'function'
+                return table.type
 
     def return_next_register(self):
         items = list(self.temp_usage.items())

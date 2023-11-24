@@ -300,26 +300,55 @@ class codigo_intermedio(grammarYaplVisitor):
 
                                     class_name = self.buscar_clase(ctx)
                                     function_name = self.buscar_funcion(ctx)
-                                    table_class = None
-                                    table_function = None
+                                    table_class = []
+                                    table_function = []
 
                                     for table in self.symbol_tables.records:
                                         table_temp = self.symbol_tables.records[table]
-                                        if table_temp.id == class_name:
-                                            table_class = self.symbol_tables.records[table]
-
+                                        if table_temp.scope == class_name:
+                                            table_class.append(self.symbol_tables.records[table])
+                                        
+                                    for table in self.symbol_tables.records:
                                         table_temp = self.symbol_tables.records[table]
-                                        if table_temp.id == function_name:
-                                            table_function = self.symbol_tables.records[table]
-                                            break
-                                    if table_class is not None:
-                                        if table_class.id == variable_name:
-                                            offset = table_class.offset
-                                            self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
-                                    if table_function is not None:
-                                        if table_function.id == variable_name:
-                                            offset = table_function.offset
-                                            self.emit(f"\tsp[{offset}] = {var_value}")
+                                        if table_temp.id == function_name and len(table_class) != 0:
+                                            table_function.append(self.symbol_tables.records[table])
+
+                                    if len(table_class) != 0:
+                                        for i in table_class:
+                                            if i.id == variable_name:
+                                                offset = i.offset
+                                                self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
+
+                                    if len(table_function) != 0:
+                                        for i in table_function:
+                                            if i.id == variable_name:
+                                                offset = i.offset
+                                                return f"sp[{offset}]"
+                                            contador = 0
+                                            for j in i.paramsName:
+                                                if j == variable_name:
+                                                    offset = i.params[contador]
+                                                    offset = self.symbol_tables.getSizeOrNoneSymbol(offset) # TODO CUIDADO CON EL OFFSET
+                                                    self.emit(f"\tsp[{offset}] = {var_value}")
+                                                contador += 1
+
+                                    # for table in self.symbol_tables.records:
+                                    #     table_temp = self.symbol_tables.records[table]
+                                    #     if table_temp.id == class_name:
+                                    #         table_class = self.symbol_tables.records[table]
+
+                                    #     table_temp = self.symbol_tables.records[table]
+                                    #     if table_temp.id == function_name:
+                                    #         table_function = self.symbol_tables.records[table]
+                                    #         break
+                                    # if table_class is not None:
+                                    #     if table_class.id == variable_name:
+                                    #         offset = table_class.offset
+                                    #         self.emit(f"\tsp_GLOBAL[{offset}] = {var_value}")
+                                    # if table_function is not None:
+                                    #     if table_function.id == variable_name:
+                                    #         offset = table_function.offset
+                                            # self.emit(f"\tsp[{offset}] = {var_value}")
 
                                     hijo_actual_plus_5 = ctx.children[i + 5]
                                     if hijo_actual_plus_5.getSymbol().type == self.symbolic_names.index("COMMA"):
@@ -343,7 +372,7 @@ class codigo_intermedio(grammarYaplVisitor):
 
         elif hasattr(ctx, 'NEG'):
             if ctx.NEG():
-                operand = self.visitExpr(ctx.expr(0))
+                operand = self.visitExpr(ctx.expr())
                 temp = self.new_temp()
                 self.emit(f"\t{temp} = NEG {operand}")
                 return temp
@@ -351,7 +380,7 @@ class codigo_intermedio(grammarYaplVisitor):
         elif hasattr(ctx, 'ISVOID'):
             if ctx.ISVOID():
                 
-                operand = self.visitExpr(ctx.expr(0))
+                operand = self.visitExpr(ctx.expr())
                 temp = self.new_temp()
                 self.emit(f"\t{temp} = isvoid {operand}")
                 return temp
@@ -415,7 +444,7 @@ class codigo_intermedio(grammarYaplVisitor):
                     
                 for table in self.symbol_tables.records:
                     table_temp = self.symbol_tables.records[table]
-                    if table_temp.id == function_name and table_class is not None:
+                    if table_temp.id == function_name and len(table_class) != 0:
                         table_function.append(self.symbol_tables.records[table])
                 
                 if len(table_class) != 0:
@@ -427,8 +456,21 @@ class codigo_intermedio(grammarYaplVisitor):
                 if len(table_function) != 0:
                     for i in table_function:
                         if i.id == variable_name:
-                            self.emit(f"\tsp[{i.offset}] = {var_value}")
-                            return f"sp[{i.offset}]"
+                            offset = i.offset
+                            return f"sp[{offset}]"
+                        contador = 0
+                        for j in i.paramsName:
+                            if j == variable_name:
+                                offset = i.params[contador]
+                                offset = self.symbol_tables.getSizeOrNoneSymbol(offset) # TODO CUIDADO CON EL OFFSET
+                                self.emit(f"\tsp[{offset}] = {var_value}")
+                                return f"sp[{offset}]"
+                            contador += 1
+                # if len(table_function) != 0:
+                #     for i in table_function:
+                #         if i.id == variable_name:
+                #             self.emit(f"\tsp[{i.offset}] = {var_value}")
+                #             return f"sp[{i.offset}]"
         
         elif hasattr(ctx, 'LPAREN'):
             if ctx.LPAREN():
@@ -453,22 +495,27 @@ class codigo_intermedio(grammarYaplVisitor):
                     
                 for table in self.symbol_tables.records:
                     table_temp = self.symbol_tables.records[table]
-                    if table_temp.id == function_name and table_class is not None:
+                    if table_temp.id == function_name and len(table_class) != 0:
                         table_function.append(self.symbol_tables.records[table])
+
                 if len(table_class) != 0:
                     for i in table_class:
                         if i.id == variable_name:
                             offset = i.offset
                             return f"sp_GLOBAL[{offset}]"
-                # if table_class is not None:
-                #     if table_class.id == variable_name:
-                #         offset = table_class.offset
-                #         return f"sp_GLOBAL[{offset}]"
+
                 if len(table_function) != 0:
                     for i in table_function:
                         if i.id == variable_name:
                             offset = i.offset
                             return f"sp[{offset}]"
+                        contador = 0
+                        for j in i.paramsName:
+                            if j == variable_name:
+                                offset = i.params[contador]
+                                offset = self.symbol_tables.getSizeOrNoneSymbol(offset) # TODO CUIDADO CON EL OFFSET
+                                return f"sp[{offset}]"
+                            contador += 1
                 # if table_function is not None:
                 #     if table_function.id == variable_name:
                 #         offset = table_class.offset

@@ -57,11 +57,6 @@ class reader():
         visitorInstance.addOffset()
         visitorInstance.print_symbol_table()
 
-        print("BOTTOMUP VALIDATOR_________________________________________________________")
-
-        # validator = bottomUpValidator(retornable)
-        # validator.visitDeep(tree)
-
         print("CODIGO INTERMEIDO_________________________________________________________")
 
         visitorInstance2 = codigo_intermedio("codigo_intermedio", retornable, grammarYaplLexer.symbolicNames)
